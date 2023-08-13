@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+"""C compiler for ENG1448 8-bit processor
+   (c) 2020-2023 Wouter Caarls, PUC-Rio
+"""
+
 import io
 
 from ppci.api import asm, cc, link
@@ -24,7 +27,25 @@ def assemble(src, section):
 
 def compile(src, opt_level):
     stdobj = assemble(io.StringIO("global main\ncall main\nloop: b loop"), "reset")
-
+    
+    ioobj = assemble(io.StringIO("""global btn
+btn: .byte 0
+global enc
+enc: .byte 0
+global kdr
+kdr: .byte 0
+global udr
+udr: .byte 0
+global usr
+usr: .byte 0
+global led
+led: .byte 0
+global ssd
+ssd: .byte 0
+global ldr
+ldr: .byte 0
+global lcr
+lsr: .byte 0"""), "io")
     obj = cc(src, 'puc8', opt_level=opt_level)
 
     layout = LayoutLoader().load_layout(io.StringIO("""
@@ -34,22 +55,27 @@ def compile(src, opt_level):
         SECTION(reset)
         SECTION(code)
     }
+    MEMORY io LOCATION=0x0 SIZE=0x10 {
+        SECTION(io)
+    }
     MEMORY ram LOCATION=0x10 SIZE=0xf0 {
         SECTION(data)
     }
     """))
 
-    obj = link([obj, stdobj], layout=layout)
+    obj = link([obj, stdobj, ioobj], layout=layout)
     
     return obj
 
 def mapaddr(obj):
     addrmap = {"code": {}, "data": {}}
+    remap = {"code": "code", "reset":"code", "data":"data", "io":"data"}
     sz = 0
     for s in obj.symbols:
+        section = remap[s.section]
         addr = s.value + obj.get_section(s.section).address
-        if s.section in addrmap and (s.binding == "global" or not addr in addrmap[s.section]):
-            addrmap[s.section][addr] = s.name
+        if section in addrmap and (s.binding == "global" or not addr in addrmap[section]):
+            addrmap[section][addr] = s.name
             sz = max(sz, len(s.name))
             
     return addrmap
@@ -80,17 +106,23 @@ def disasm(obj):
             
             mem['code'].append((inst, dis))
 
-    for i in range(obj.get_section("data").address):
-        mem['data'].append(("00000000", ""))
-        
+    data_addr = obj.get_section("data").address
+
+    for addr in range(data_addr):
+        if addr in addrmap["data"]:
+            mem['data'].append(("00000000", f"{addrmap['data'][addr]}:{' '*(sz-len(addrmap['data'][addr]))} .db  0"))
+        else:
+            mem['data'].append(("00000000", ""))
+
     for i in range(len(ram)):
+        addr = i + data_addr
         dis = f".db  {ram[i]:d}"
             
-        if i in addrmap["data"]:
-            dis = f"{addrmap['data'][i]}:{' '*(sz-len(addrmap['data'][i]))} {dis}"
+        if addr in addrmap["data"]:
+            dis = f"{addrmap['data'][addr]}:{' '*(sz-len(addrmap['data'][addr]))} {dis}"
         else:
             dis = f"{' ':{sz}}  {dis}"
             
         mem['data'].append((f"{ram[i]:08b}", dis))
-
+        
     return mem

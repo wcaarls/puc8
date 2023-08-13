@@ -1,3 +1,7 @@
+"""Simulator for ENG1448 8-bit processor
+   (c) 2020-2023 Wouter Caarls, PUC-Rio
+"""
+
 import copy
 from disassembler import Disassembler
 

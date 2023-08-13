@@ -1,3 +1,7 @@
+"""Instruction pattern definitions for ENG1448 8-bit processor
+   (c) 2020-2023 Wouter Caarls, PUC-Rio
+"""
+
 defs = {'ldr':   [('0000', '0000', 'RA'),
                   ('0001',     '', 'RB'),
                   ('0010',     '', 'RC')],

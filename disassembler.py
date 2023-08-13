@@ -1,3 +1,7 @@
+"""Disassembler for ENG1448 8-bit processor
+   (c) 2020-2023 Wouter Caarls, PUC-Rio
+"""
+
 from instructions import defs
 
 class Disassembler():
@@ -19,7 +23,10 @@ class Disassembler():
                             dis += f"[r{reg}], "
                         elif o == "B":
                             addr = int(inst[istart:istart+8], 2)
-                            dis += f"[{addr}], "
+                            if self.map is not None and addr in self.map["data"]:
+                                dis += f"[@{self.map['data'][addr]}], "
+                            else:
+                                dis += f"[{addr}], "
                         elif o == "C":
                             val = int(inst[istart:istart+8], 2)
                             if self.map is not None and 2*val in self.map["code"] and (mnemonic == "call" or mnemonic[0] == 'b'):

@@ -11,7 +11,7 @@ from simulator import Simulator
 from emitter import emitvhdl
 
 def main():
-    parser = argparse.ArgumentParser(description='PUC8 Assembler (c) 2023 Wouter Caarls, PUC-Rio')
+    parser = argparse.ArgumentParser(description='PUC8 Assembler (c) 2020-2023 Wouter Caarls, PUC-Rio')
     parser.add_argument('file', type=str,
                         help='ASM source file')
     parser.add_argument('-o', '--output', type=str,

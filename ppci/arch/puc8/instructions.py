@@ -157,6 +157,7 @@ class Abs8BranchRelocation(Relocation):
     field = "cb"
 
     def calc(self, sym_value, reloc_value):
+        # Imem is 16-bit
         return sym_value // 2
 
 def branch_relocations(self):
@@ -288,9 +289,10 @@ def pattern_xor(context, tree, c0, c1):
     context.emit(EOr(d, c0, c1))
     return d
 
-@isa.pattern("reg", "MULU8(reg, CONSTI8)")
+@isa.pattern("reg", "MULU8(reg, CONSTI8)", condition=lambda t: t[1].value >= 0 and (t[1].value == 0 or log2(t[1].value).is_integer()))
 @isa.pattern("reg", "MULU8(reg, CONSTU8)")
 def pattern_mul(context, tree, c0):
+    # Multiply with constant is needed for array handling; emulate
     if tree[1].value == 0:
         d = context.new_reg(PUC8Register)
         context.emit(LdrCI(d, 0))
@@ -344,6 +346,7 @@ def pattern_reg_as_mem(context, tree, c0):
 
 @isa.pattern("reg", "FPRELU8", size=6, cycles=3, energy=5)
 def pattern_fprelu8(context, tree):
+    # First stack element is at fp. Previous fp is at fp+1
     if tree.value.offset != -1:
         d = context.new_reg(PUC8Register)
         context.emit(LdrCI(d, tree.value.offset+1))
@@ -431,7 +434,7 @@ def pattern_jmp(context, tree):
     tgt = tree.value
     context.emit(B(tgt.name, jumps=[tgt]))
 
-@isa.pattern("stm", "CJMPI8(reg, reg)")
+@isa.pattern("stm", "CJMPI8(reg, reg)", condition=lambda t: t.value[0] == "==" or t.value[0] == "!=")
 def pattern_cjmpi(context, tree, c0, c1):
     op, yes_label, no_label = tree.value
     opnames = {
@@ -462,6 +465,24 @@ def pattern_cjmpu(context, tree, c0, c1):
         context.emit(Sub(d, c1, c0));
     else:
         context.emit(Sub(d, c0, c1));
+    jmp_ins = B(no_label.name, jumps=[no_label])
+    context.emit(Bop(yes_label.name, jumps=[yes_label, jmp_ins]))
+    context.emit(jmp_ins)
+
+@isa.pattern("stm", "CJMPI8(reg, CONSTI8)", condition=lambda t: t[1].value == 0 and (t.value[0] == "==" or t.value[0] == "!="))
+@isa.pattern("stm", "CJMPU8(reg, CONSTI8)", condition=lambda t: t[1].value == 0 and (t.value[0] == "==" or t.value[0] == "!="))
+@isa.pattern("stm", "CJMPI8(reg, CONSTU8)", condition=lambda t: t[1].value == 0 and (t.value[0] == "==" or t.value[0] == "!="))
+@isa.pattern("stm", "CJMPU8(reg, CONSTU8)", condition=lambda t: t[1].value == 0 and (t.value[0] == "==" or t.value[0] == "!="))
+def pattern_cjmp0(context, tree, c0):
+    # Special case for comparison to 0 (more efficient)
+    op, yes_label, no_label = tree.value
+    opnames = {
+        "==": BZ,
+        "!=": BNZ,
+    }
+    Bop = opnames[op]
+    d = context.new_reg(PUC8Register)
+    context.emit(Mov(c0, c0));
     jmp_ins = B(no_label.name, jumps=[no_label])
     context.emit(Bop(yes_label.name, jumps=[yes_label, jmp_ins]))
     context.emit(jmp_ins)

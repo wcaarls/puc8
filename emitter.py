@@ -1,3 +1,7 @@
+"""ASM and VHDL emitter for ENG1448 8-bit processor
+   (c) 2020-2023 Wouter Caarls, PUC-Rio
+"""
+
 import os
 
 def emitasm(mem, f):
@@ -5,16 +9,17 @@ def emitasm(mem, f):
     for c in mem['code']:
         print(c[1], file=f)
     print(".section data", file=f)
-    start = 0
+    addr = 0
+    skipped = False
     for c in mem['data']:
         if c[1] == "":
-            start += 1
+            skipped = True
         else:
-            if start > 0:
-                print(f".org {start}")
-                start = 0
-            else:
-                print(c[1], file=f)
+            if skipped == True:
+                print(f".org {addr}", file=f)
+                skipped = False
+            print(c[1], file=f)
+        addr += 1
 
 def emitarray(section, f):
     print("(", file=f)

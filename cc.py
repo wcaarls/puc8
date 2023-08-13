@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+"""C compiler for ENG1448 8-bit processor
+   (c) 2020-2023 Wouter Caarls, PUC-Rio
+"""
+
 import sys, argparse
 
 from compiler import compile, disasm
@@ -18,7 +23,7 @@ def assemble(src, section):
     return obj
 
 def main():
-    parser = argparse.ArgumentParser(description='PUC8 C compiler (c) 2023 Wouter Caarls, PUC-Rio')
+    parser = argparse.ArgumentParser(description='PUC8 C compiler (c) 2020-2023 Wouter Caarls, PUC-Rio')
     parser.add_argument('file', type=str,
                         help='C source file')
     parser.add_argument('-o', '--output', type=str,
