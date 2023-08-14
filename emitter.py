@@ -26,7 +26,7 @@ def emitarray(section, f):
     for l, c in enumerate(section):
         if (c[0] != "0000000000000000" and c[0] != "00000000") or c[1] != "":
             print(f"    {l:3} => \"{c[0]}\", -- {c[1]}", file=f)
-    print("     others => \"00000000\");", file=f)
+    print("     others => (others => '0'));", file=f)
 
 def emitvhdl(mem, f):
     if f.name != '<stdout>':
