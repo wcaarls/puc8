@@ -4,14 +4,10 @@
 
 import os
 
-def emitasm(mem, f):
-    print(".section code", file=f)
-    for c in mem['code']:
-        print(c[1], file=f)
-    print(".section data", file=f)
+def emitasmsection(section, f):
     addr = 0
     skipped = False
-    for c in mem['data']:
+    for c in section:
         if c[1] == "":
             skipped = True
         else:
@@ -20,6 +16,13 @@ def emitasm(mem, f):
                 skipped = False
             print(c[1], file=f)
         addr += 1
+
+
+def emitasm(mem, f):
+    print(".section code", file=f)
+    emitasmsection(mem['code'], f)
+    print(".section data", file=f)
+    emitasmsection(mem['data'], f)
 
 def emitarray(section, f):
     print("(", file=f)

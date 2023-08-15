@@ -116,7 +116,10 @@ def disasm(obj):
 
     for i in range(len(ram)):
         addr = i + data_addr
-        dis = f".db  {ram[i]:d}"
+        v = ram[i]
+        dis = f".db  {v:d}"
+        if v >= 32 and v <= 126:
+            dis += " "*(8-len(dis)) + f"; '{v:c}'"
             
         if addr in addrmap["data"]:
             dis = f"{addrmap['data'][addr]}:{' '*(sz-len(addrmap['data'][addr]))} {dis}"

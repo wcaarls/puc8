@@ -107,10 +107,13 @@ class Preprocessor:
                         macro = ""
                     elif mnemonic in macros:
                         # Macro call. Emit macro contents into main instruction stream.
+                        if label != "":
+                            code.append((file, idx, label, ""))
+                        
                         for (file2, idx2, label2, inst2) in macros[mnemonic]:
                             newinst = ""
                             ii = 0
-                            if label2 != "" and label2[0] == 'l':
+                            if label2 != "" and label2[0] == '_':
                                 # Make label definition local
                                 label2 = label2 + str(nonce) + "_"
                             while ii < len(inst2):
@@ -122,9 +125,9 @@ class Preprocessor:
                                         ii += 2
                                     else:
                                         raise SyntaxError(f"Invalid argument ${arg} in call to macro {mnemonic}")
-                                elif inst2[ii] == '@' and ii < len(inst2)-1 and inst2[ii+1] == 'l':
+                                elif inst2[ii] == '@' and ii < len(inst2)-1 and inst2[ii+1] == '_':
                                     # Make label use local
-                                    while ii < len(inst2) and not inst2[ii].isspace():
+                                    while ii < len(inst2) and not inst2[ii].isspace() and inst2[ii] != ']':
                                         newinst = newinst + inst2[ii]
                                         ii += 1
                                     newinst = newinst + str(nonce) + "_"
