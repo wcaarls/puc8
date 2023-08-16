@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+import argparse, subprocess
+from typing import Sequence
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filenames', nargs='*')
+    args = parser.parse_args(argv)
+
+    retval = 0
+    for filename in args.filenames:
+        code = subprocess.run(['./as.py', filename, '-o', '/dev/null']).returncode
+        if code != 0:
+            print(f'{filename}: failed assembly')
+            retval = 1
+
+    return retval
+
+if __name__ == '__main__':
+    raise SystemExit(main())

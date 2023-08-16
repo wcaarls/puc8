@@ -8,9 +8,11 @@ mylbl:  .equ equ1, 0x2a
 
 ; .db
 .section data
+        .org 0x20
         .db 123
         .db 0x2a
         .db @mylbl2
+        .org 0x40
 mylbl2: .db "Hello, world"
         .db 123, 0x2a, @mylbl2, "Hello, world"
 
@@ -19,7 +21,7 @@ mylbl2: .db "Hello, world"
 ; .macro
 ; local labels
         .macro macro1
-loop:   b @loop
+_loop:  b @_loop
         .endmacro
         macro1
         macro1
@@ -27,10 +29,10 @@ loop:   b @loop
 ; .macro
 ; arguments
         .macro macro2
-loop:   ldr r1, $0
+_loop:  ldr r1, $0
         ldr r1, $1
         macro1
-        b @loop
+        b @_loop
         .endmacro
         macro2 0xAA, 0x55
 

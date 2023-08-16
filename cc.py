@@ -37,7 +37,7 @@ def main():
 
     args = parser.parse_args()
 
-    with open(args.file, "r") as f:
+    with open(args.file, 'r') as f:
         obj = compile(f, args.O)
 
     mem = disasm(obj)
@@ -46,10 +46,10 @@ def main():
         sim.process(mem)
     else:
         if args.output != '-':
-            f = open(args.output, "w")
+            f = open(args.output, 'w')
         else:
             f = sys.stdout
-            
+
         if args.S:
             emitasm(mem, f)
         else:
@@ -57,5 +57,5 @@ def main():
 
         f.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

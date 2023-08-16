@@ -24,7 +24,7 @@ writemsg:
 wloop: ldr  r2, [r1]  ; Get character to write
        writelcd r2    ; Write character to LCD
        inc  r1, r1    ; Advance
-       sub  r2, r1, r0; 
+       sub  r2, r1, r0;
        bnz  @wloop    ; Loop until last character was sent
        ret            ; ret
 

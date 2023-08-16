@@ -6,7 +6,7 @@ void error()
 void main(void)
 {
   unsigned int a=12, b=13;
-  
+
   if (a == b) error();
   if (a > b) error();
   if (a >= b) error();

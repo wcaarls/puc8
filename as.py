@@ -25,27 +25,27 @@ def main():
 
     pp  = Preprocessor()
     asm = pp.process(args.file)
-    
+
     if args.output != '-':
         f = open(args.output, 'w')
     else:
         f = sys.stdout
-        
+
     if args.E:
         # Don't emit machine code, just preprocessed assembly.
         for (idx, label, inst) in asm:
-            print(idx + " " + (label + ": " if label != "" else "") + inst, file=f)
+            print(idx + ' ' + (label + ': ' if label != '' else '') + inst, file=f)
     else:
         ass = Assembler()
         mem = ass.process(asm)
-            
+
         if args.simulate:
             sim = Simulator()
             sim.process(mem)
         else:
             emitvhdl(mem, f)
-            
+
     f.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

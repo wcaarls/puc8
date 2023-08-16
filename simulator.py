@@ -5,8 +5,8 @@
 import copy
 from disassembler import Disassembler
 
-"""Machine state for simulator."""
 class State:
+    """Machine state for simulator."""
     def __init__(self):
         self.regs = [0 for i in range(16)]
         self.mem = [0 for i in range(256)]
@@ -14,43 +14,43 @@ class State:
         self.sp = 255
         self.zero = False
         self.carry = False
-    
-    """Calculates difference between this state and another."""
+
     def diff(self, state):
-        d = ""
-    
+        """Calculates difference between this state and another."""
+        d = ''
+
         for i in range(16):
             if self.regs[i] != state.regs[i]:
-                d += f", r{i} <- {state.regs[i]}"
+                d += f', r{i} <- {state.regs[i]}'
         for i in range(256):
             if self.mem[i] != state.mem[i]:
-                d += f", [{i}] <- {state.mem[i]}"
+                d += f', [{i}] <- {state.mem[i]}'
         if self.sp != state.sp:
-            d += f", sp <- {state.sp}"
+            d += f', sp <- {state.sp}'
         if self.zero != state.zero:
-            d += f", zf <- {state.zero}"
+            d += f', zf <- {state.zero}'
         if self.carry != state.carry:
-            d += f", cf <- {state.carry}"
-            
-        if d != "":
+            d += f', cf <- {state.carry}'
+
+        if d != '':
             d = d[2:]
         return d
 
     def __str__(self):
-        s = ""
+        s = ''
         for i in range(16):
-            s += f"r{i} = {self.regs[i]}, "
-        s += f"pc = {self.pc}, sp = {self.sp}, zf = {self.zero}, cf = {self.carry}"
+            s += f'r{i} = {self.regs[i]}, '
+        s += f'pc = {self.pc}, sp = {self.sp}, zf = {self.zero}, cf = {self.carry}'
 
         return s
-        
-"""Simulates machine code."""
+
 class Simulator:
+    """Simulates machine code."""
     def __init__(self):
         self.disassembler = Disassembler()
-        
-    """Returns machine state after executing instruction."""
+
     def execute(self, bin, state):
+        """Returns machine state after executing instruction."""
         # Disassemble instruction
         m, dis = self.disassembler.process(bin)
 
@@ -64,89 +64,89 @@ class Simulator:
         next.pc += 1
 
         # Simulate instructions
-        if m == "ldr":
-            if opcode == "0000":
+        if m == 'ldr':
+            if opcode == '0000':
                 next.regs[r1] = state.mem[state.regs[r2]]
-            elif opcode == "0001":
+            elif opcode == '0001':
                 next.regs[r1] = state.mem[cd]
-            elif opcode == "0010":
+            elif opcode == '0010':
                 next.regs[r1] = cd
-        elif m == "str":
-            if opcode == "0011":
+        elif m == 'str':
+            if opcode == '0011':
                 next.mem[state.regs[r2]] = state.regs[r1]
-            elif opcode == "0100":
+            elif opcode == '0100':
                 next.mem[cd] = state.regs[r1]
-        elif m == "push":
+        elif m == 'push':
             if state.sp == -1:
-                raise RuntimeError("Stack overflow")
+                raise RuntimeError('Stack overflow')
             next.mem[state.sp] =  state.regs[r1]
             next.sp -= 1
-        elif m == "pop":
+        elif m == 'pop':
             if state.sp == 255:
-                raise RuntimeError("Stack underflow")
+                raise RuntimeError('Stack underflow')
             next.regs[r1] = state.mem[state.sp+1]
             next.sp += 1
-        elif m == "ldsp":
+        elif m == 'ldsp':
             next.regs[r1] = state.sp
-        elif m == "stsp":
+        elif m == 'stsp':
             next.sp = state.regs[r1]
-        elif m == "call":
+        elif m == 'call':
             if state.sp == -1:
-                raise RuntimeError("Stack overflow")
+                raise RuntimeError('Stack overflow')
             next.mem[state.sp] = state.pc+1
             next.pc = cb
             next.sp -= 1
-        elif m == "ret":
+        elif m == 'ret':
             if state.sp == 255:
-                raise RuntimeError("Stack underflow")
+                raise RuntimeError('Stack underflow')
             next.pc = state.mem[state.sp+1]
             next.sp += 1
-        elif m == "bx":
+        elif m == 'bx':
             # Indirect jump
             next.pc = state.regs[r1]
-        elif opcode == "1110":
+        elif opcode == '1110':
             # Direct jumps
-            if ( m == "b" or
-                (m == "bz" and state.zero) or (m == "bnz" and not state.zero) or
-                (m == "bcs" and state.carry) or (m == "bcc" and not state.carry)):
+            if ( m == 'b' or
+                (m == 'bz' and state.zero) or (m == 'bnz' and not state.zero) or
+                (m == 'bcs' and state.carry) or (m == 'bcc' and not state.carry)):
                 next.pc = cb
         else:
             # ALU instructions (modify flags)
-            if m == "mov":
+            if m == 'mov':
                 res = state.regs[r2]
-            elif m == "mvn":
+            elif m == 'mvn':
                 res = ~state.regs[r2]
-            elif m == "neg":
+            elif m == 'neg':
                 res = 256-state.regs[r2]
-            elif m == "inc":
+            elif m == 'inc':
                 res = state.regs[r2] + 1
-            elif m == "dec":
+            elif m == 'dec':
                 res = state.regs[r2] + 255
-            elif m == "lsl":
+            elif m == 'lsl':
                 res = state.regs[r2]<<1
-            elif m == "lsr":
+            elif m == 'lsr':
                 res = state.regs[r2]>>1
-            elif m == "rol":
+            elif m == 'rol':
                 res = state.regs[r2]<<1 | state.carry
-            elif m == "ror":
+            elif m == 'ror':
                 res = state.regs[r2]>>1 | (128*state.carry)
-            elif m == "add":
+            elif m == 'add':
                 res = state.regs[r2] + state.regs[r3]
-            elif m == "adc":
+            elif m == 'adc':
                 res = state.regs[r2] + state.regs[r3] + state.carry
-            elif m == "sub":
+            elif m == 'sub':
                 res = state.regs[r2] + (256-state.regs[r3])
-            elif m == "sbc":
+            elif m == 'sbc':
                 res = state.regs[r2] + (256-state.regs[r3]) - (1 - state.carry)
-            elif m == "and":
+            elif m == 'and':
                 res = state.regs[r2] & state.regs[r3]
-            elif m == "orr":
+            elif m == 'orr':
                 res = state.regs[r2] | state.regs[r3]
-            elif m == "eor":
+            elif m == 'eor':
                 res = state.regs[r2] ^ state.regs[r3]
             else:
-                raise ValueError(f"Unknown opcode {opcode}")
-            
+                raise ValueError(f'Unknown opcode {opcode}')
+
             next.zero = ((res&255) == 0)
             next.carry = bool(res & 256)
             next.regs[r1] = res&255
@@ -154,8 +154,7 @@ class Simulator:
         return next
 
     def help(self):
-        print(
-"""Available commands:
+        print("""Available commands:
    h       This help.
    n       Advance to next instruction.
    p       Print current state.
@@ -166,39 +165,39 @@ class Simulator:
    [a] = y Set memory address a to value y.
 """)
 
-    """Simulate machine code."""
     def process(self, mem):
+        """Simulate machine code."""
         state = State()
-        for i, c in enumerate(mem["data"]):
+        for i, c in enumerate(mem['data']):
             state.mem[i] = int(c[0], 2)
-    
+
         while True:
             # Print current instruction
             bin = mem['code'][state.pc][0]
             _, dis = self.disassembler.process(bin)
-            print(f"{state.pc:3}: {bin[0:8]} {bin[8:16]} ({dis})")
+            print(f'{state.pc:3}: {bin[0:8]} {bin[8:16]} ({dis})')
 
             next = copy.deepcopy(state)
 
             # Present interface
-            cmd = input(">> ").strip()
-            if cmd == "" or cmd == "n":
+            cmd = input('>> ').strip()
+            if cmd == '' or cmd == 'n':
                 # Advance to next instruction
                 next = self.execute(bin, state)
-            elif cmd == "p":
+            elif cmd == 'p':
                 # Print current state
                 print(state)
-            elif cmd == "q":
+            elif cmd == 'q':
                 # Exit simulator
                 return
-            elif cmd[0] == "r":
+            elif cmd[0] == 'r':
                 # Set register
                 tokens = [t.strip() for t in cmd.split('=')]
                 if len(tokens[0]) < 2:
                     self.help()
                 elif len(tokens) == 1:
                     try:
-                        print(f"r{int(tokens[0][1:])} = {state.regs[int(tokens[0][1:])]}")
+                        print(f'r{int(tokens[0][1:])} = {state.regs[int(tokens[0][1:])]}')
                     except Exception as e:
                         print(e)
                 elif len(tokens) == 2:
@@ -208,14 +207,14 @@ class Simulator:
                         print(e)
                 else:
                     self.help()
-            elif cmd[0] == "[":
+            elif cmd[0] == '[':
                 # Set memory address
                 tokens = [t.strip() for t in cmd.split('=')]
                 if len(tokens[0]) < 2 or tokens[0][0] != '[' or tokens[0][-1] != ']':
                     self.help()
                 elif len(tokens) == 1:
                     try:
-                        print(f"[{int(tokens[0][1:-1])}] = {state.mem[int(tokens[0][1:-1])]}")
+                        print(f'[{int(tokens[0][1:-1])}] = {state.mem[int(tokens[0][1:-1])]}')
                     except Exception as e:
                         print(e)
                 elif len(tokens) == 2:
@@ -230,6 +229,6 @@ class Simulator:
 
             # Print resulting difference
             diff = state.diff(next)
-            if diff != "":
-                print("     " + diff)
+            if diff != '':
+                print('     ' + diff)
             state = copy.deepcopy(next)

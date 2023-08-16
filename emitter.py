@@ -8,26 +8,26 @@ def emitasmsection(section, f):
     addr = 0
     skipped = False
     for c in section:
-        if c[1] == "":
+        if c[1] == '':
             skipped = True
         else:
             if skipped == True:
-                print(f".org {addr}", file=f)
+                print(f'.org {addr}', file=f)
                 skipped = False
             print(c[1], file=f)
         addr += 1
 
 
 def emitasm(mem, f):
-    print(".section code", file=f)
+    print('.section code', file=f)
     emitasmsection(mem['code'], f)
-    print(".section data", file=f)
+    print('.section data', file=f)
     emitasmsection(mem['data'], f)
 
 def emitarray(section, f):
-    print("(", file=f)
+    print('(', file=f)
     for l, c in enumerate(section):
-        if (c[0] != "0000000000000000" and c[0] != "00000000") or c[1] != "":
+        if (c[0] != '0000000000000000' and c[0] != '00000000') or c[1] != '':
             print(f"    {l:3} => \"{c[0]}\", -- {c[1]}", file=f)
     print("     others => (others => '0'));", file=f)
 
@@ -44,15 +44,15 @@ package {pkg} is
 
   constant {pkg}_rom: {pkg}ROMT := """, file=f, end='')
     else:
-        pkg = ""
+        pkg = ''
         print(f"""  signal rom: ROMT := """, file=f, end='')
     emitarray(mem['code'], f)
 
-    if pkg != "":
-        print(f"  constant {pkg}_ram: {pkg}RAMT := ", file=f, end='')
+    if pkg != '':
+        print(f'  constant {pkg}_ram: {pkg}RAMT := ', file=f, end='')
     else:
-        print(f"  signal ram: RAMT := ", file=f, end='')
+        print(f'  signal ram: RAMT := ', file=f, end='')
     emitarray(mem['data'], f)
 
-    if pkg != "":
-        print(f"end package {pkg};", file=f)
+    if pkg != '':
+        print(f'end package {pkg};', file=f)

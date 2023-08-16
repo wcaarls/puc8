@@ -14,6 +14,7 @@ from ppci.binutils.objectfile import ObjectFile, Image, merge_memories
 from disassembler import Disassembler
 
 def assemble(src, section):
+    """Assemble into a specific section."""
     diag = DiagnosticsManager()
     march = get_arch('puc8')
     assembler = march.assembler
@@ -26,8 +27,9 @@ def assemble(src, section):
     return obj
 
 def compile(src, opt_level):
-    stdobj = assemble(io.StringIO("global main\ncall main\nloop: b loop"), "reset")
-    
+    """Compile C source into an object with the correct memory layout."""
+    stdobj = assemble(io.StringIO('global main\ncall main\nloop: b loop'), 'reset')
+
     ioobj = assemble(io.StringIO("""global btn
 btn: .byte 0
 global enc
@@ -45,7 +47,7 @@ ssd: .byte 0
 global ldr
 ldr: .byte 0
 global lcr
-lsr: .byte 0"""), "io")
+lsr: .byte 0"""), 'io')
     obj = cc(src, 'puc8', opt_level=opt_level)
 
     layout = LayoutLoader().load_layout(io.StringIO("""
@@ -64,68 +66,70 @@ lsr: .byte 0"""), "io")
     """))
 
     obj = link([obj, stdobj, ioobj], layout=layout)
-    
+
     return obj
 
 def mapaddr(obj):
-    addrmap = {"code": {}, "data": {}}
-    remap = {"code": "code", "reset":"code", "data":"data", "io":"data"}
+    """Create reverse map of addresses to symbols."""
+    addrmap = {'code': {}, 'data': {}}
+    remap = {'code': 'code', 'reset':'code', 'data':'data', 'io':'data'}
     sz = 0
     for s in obj.symbols:
         section = remap[s.section]
         addr = s.value + obj.get_section(s.section).address
-        if section in addrmap and (s.binding == "global" or not addr in addrmap[section]):
+        if section in addrmap and (s.binding == 'global' or not addr in addrmap[section]):
             addrmap[section][addr] = s.name
             sz = max(sz, len(s.name))
-            
+
     return addrmap
 
 def disasm(obj):
-    mem = {"code": [], "data": []}
-    
+    """Disassemble object into code and data memory contents."""
+    mem = {'code': [], 'data': []}
+
     addrmap = mapaddr(obj)
     disasm = Disassembler(addrmap)
-    
+
     sz = 0
     for s in addrmap:
         for a in addrmap[s]:
             sz = max(sz, len(addrmap[s][a]))
 
-    rom = obj.get_image("rom").sections[0].data + obj.get_image("rom").sections[1].data
-    ram = obj.get_image("ram").sections[0].data
-    
+    rom = obj.get_image('rom').sections[0].data + obj.get_image('rom').sections[1].data
+    ram = obj.get_image('ram').sections[0].data
+
     for i in range(len(rom)):
         if i%2==0:
-            inst = f"{rom[i]:08b}{rom[i+1]:08b}"
+            inst = f'{rom[i]:08b}{rom[i+1]:08b}'
             dis = disasm.process(inst)[1]
-            
-            if i in addrmap["code"]:
+
+            if i in addrmap['code']:
                 dis = f"{addrmap['code'][i]}:{' '*(sz-len(addrmap['code'][i]))} {dis}"
             else:
                 dis = f"{' ':{sz}}  {dis}"
-            
+
             mem['code'].append((inst, dis))
 
-    data_addr = obj.get_section("data").address
+    data_addr = obj.get_section('data').address
 
     for addr in range(data_addr):
-        if addr in addrmap["data"]:
-            mem['data'].append(("00000000", f"{addrmap['data'][addr]}:{' '*(sz-len(addrmap['data'][addr]))} .db  0"))
+        if addr in addrmap['data']:
+            mem['data'].append(('00000000', f"{addrmap['data'][addr]}:{' '*(sz-len(addrmap['data'][addr]))} .db  0"))
         else:
-            mem['data'].append(("00000000", ""))
+            mem['data'].append(('00000000', ''))
 
     for i in range(len(ram)):
         addr = i + data_addr
         v = ram[i]
-        dis = f".db  {v:d}"
+        dis = f'.db  {v:d}'
         if v >= 32 and v <= 126:
-            dis += " "*(8-len(dis)) + f"; '{v:c}'"
-            
-        if addr in addrmap["data"]:
+            dis += ' '*(8-len(dis)) + f"; '{v:c}'"
+
+        if addr in addrmap['data']:
             dis = f"{addrmap['data'][addr]}:{' '*(sz-len(addrmap['data'][addr]))} {dis}"
         else:
             dis = f"{' ':{sz}}  {dis}"
-            
-        mem['data'].append((f"{ram[i]:08b}", dis))
-        
+
+        mem['data'].append((f'{ram[i]:08b}', dis))
+
     return mem
