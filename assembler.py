@@ -14,6 +14,23 @@ def split(s):
     tokens = _split(s)
     mnemonic = tokens[0]
     operands = _split(''.join(tokens[1:]), ',')
+
+    # Translate MNM Rd, [rR, C] into MNM Rd, [rR], C
+    if len(operands) == 3:
+        if operands[1][0] == '[' and operands[1][-1] != ']' and operands[2][0] != '[' and operands[2][-1] == ']':
+            operands[1] = operands[1] + ']'
+            operands[2] = operands[2][0:-1]
+
+    # Translate special-purpose register names
+    for i, o in enumerate(operands):
+        if o == 'pc':
+            operands[i] = 'r15'
+        if o == '[pc]':
+            operands[i] = '[r15]'
+        if o == 'sp':
+            operands[i] = 'r14'
+        if o == '[sp]':
+            operands[i] = '[r14]'
     return mnemonic, operands
 
 class Preprocessor:
@@ -235,7 +252,7 @@ class Assembler:
                         if len(o) < 2 or o[0] != 'r' or int(o[1:]) < 0 or int(o[1:]) > 15:
                             raise SyntaxError(f"{lidx}: {mnemonic} operand '{o}' is not a valid register")
                         ret.append(f'{int(o[1:]):04b}')
-                    elif r == 'C' or r == 'B':
+                    elif r == '4' or r == '8' or r == 'B':
                         if r == 'B':
                             # Constant address
                             if len(o) < 2 or o[0] != '[' or o[-1] != ']':
@@ -245,21 +262,31 @@ class Assembler:
                         # Constant or label evaluated as constant
                         if len(o) > 1 and o[0] == '@':
                             if o[1:] in labels:
-                                ret.append(f'{labels[o[1:]]:08b}')
+                                if r == '4':
+                                    ret.append(f'{labels[o[1:]]:04b}')
+                                else:
+                                    ret.append(f'{labels[o[1:]]:08b}')
                             else:
                                 raise ValueError(f"{lidx}: label '{o}' not defined")
-                        elif len(o) == 3 and o[0] == r'"' and o[-1] == r'"':
+                        elif r != '4' and len(o) == 3 and o[0] == r'"' and o[-1] == r'"':
                             ret.append(f'{ord(o[1]):08b}')
                         else:
                             try:
                                 val = int(o, 0)
                             except:
                                 raise SyntaxError(f"{lidx}: {mnemonic} operand '{o}' is not a valid constant")
-                            if val < -128 or val > 255:
-                                raise ValueError(f"{lidx}: {mnemonic} operand '{o}' is not a valid 8-bit signed or unsigned constant")
-                            if val < 0:
-                                val = 256+val
-                            ret.append(f'{val:08b}')
+                            if r == '4':
+                                if val < -8 or val > 15:
+                                    raise ValueError(f"{lidx}: {mnemonic} operand '{o}' is not a valid 4-bit signed or unsigned constant")
+                                if val < 0:
+                                     val = 16+val
+                                ret.append(f'{val:04b}')
+                            else:
+                                if val < -128 or val > 255:
+                                    raise ValueError(f"{lidx}: {mnemonic} operand '{o}' is not a valid 8-bit signed or unsigned constant")
+                                if val < 0:
+                                    val = 256+val
+                                ret.append(f'{val:08b}')
                     else:
                         ret.append(o)
                 return opcode, minor, ret
@@ -298,7 +325,7 @@ class Assembler:
                 # Fill memory until requested address
                 while len(mem[section]) < int('0b' + operands[0], 0):
                     if section == 'code':
-                        mem[section].append(('0000000000000000', ''))
+                        mem[section].append(('00000000000000000', ''))
                     else:
                         mem[section].append(('00000000', ''))
             elif mnemonic == '.db':

@@ -24,13 +24,13 @@ r9 = PUC8Register("r9", num=9)
 r10 = PUC8Register("r10", num=10)
 r11 = PUC8Register("r11", num=11)
 r12 = PUC8Register("r12", num=12)
-r13 = PUC8Register("r13", num=13)
-r14 = PUC8Register("r14", num=14)
-fp = PUC8Register("r15", num=15, aka=("fp",))
+fp = PUC8Register("r13", num=13, aka=("fp",))
+sp = PUC8Register("r14", num=14, aka=("sp",))
+pc = PUC8Register("r15", num=15, aka=("pc",))
 
-PUC8Register.registers = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, fp]
+PUC8Register.registers = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, fp, sp, pc]
 num_reg_map = {r.num: r for r in PUC8Register.registers}
-alloc_registers = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10]
+alloc_registers = [r1, r2, r3, r4, r5, r6, r7, r8]
 
 register_classes = [
     RegisterClass(

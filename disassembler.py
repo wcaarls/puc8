@@ -2,7 +2,7 @@
    (c) 2020-2023 Wouter Caarls, PUC-Rio
 """
 
-from instructions import defs
+from instructions import defs_dis as defs
 
 class Disassembler():
     def __init__(self, map=None):
@@ -27,10 +27,13 @@ class Disassembler():
                                 dis += f"[@{self.map['data'][addr]}], "
                             else:
                                 dis += f'[{addr}], '
-                        elif o == 'C':
+                        elif o == '4':
+                            val = int(inst[istart:istart+4], 2)
+                            dis += f'{val}, '
+                        elif o == '8':
                             val = int(inst[istart:istart+8], 2)
-                            if self.map is not None and 2*val in self.map['code'] and (mnemonic == 'call' or mnemonic[0] == 'b'):
-                                dis += f"@{self.map['code'][2*val]}, "
+                            if self.map is not None and 4*val in self.map['code'] and (mnemonic == 'call' or mnemonic[0] == 'b'):
+                                dis += f"@{self.map['code'][4*val]}, "
                             else:
                                 dis += f'{val}, '
                     dis = dis[:-2]

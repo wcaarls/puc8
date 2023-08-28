@@ -4,7 +4,9 @@
 
 import io
 
-from ppci.api import asm, cc, link
+from ppci.api import asm, cc, link, optimize
+from ppci.lang.c import c_to_ir
+from ppci.irutils import to_json
 from ppci.binutils.layout import LayoutLoader
 from ppci.common import DiagnosticsManager
 from ppci.binutils.outstream import BinaryOutputStream
@@ -50,10 +52,14 @@ global lcr
 lsr: .byte 0"""), 'io')
     obj = cc(src, 'puc8', opt_level=opt_level)
 
+#    ir = c_to_ir(src, 'puc8')
+#    optimize(ir, level=opt_level)
+#    print(to_json(ir))
+
     layout = LayoutLoader().load_layout(io.StringIO("""
     ENTRY(main)
 
-    MEMORY rom LOCATION=0 SIZE=0x100 {
+    MEMORY rom LOCATION=0 SIZE=0x400 {
         SECTION(reset)
         SECTION(code)
     }
@@ -99,8 +105,8 @@ def disasm(obj):
     ram = obj.get_image('ram').sections[0].data
 
     for i in range(len(rom)):
-        if i%2==0:
-            inst = f'{rom[i]:08b}{rom[i+1]:08b}'
+        if i%4==0:
+            inst = f'{rom[i+1]:01b}{rom[i+2]:08b}{rom[i+3]:08b}'
             dis = disasm.process(inst)[1]
 
             if i in addrmap['code']:

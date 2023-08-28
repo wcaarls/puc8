@@ -43,7 +43,7 @@ class PUC8Arch(Architecture):
 
     def determine_arg_locations(self, arg_types):
         arg_locs = []
-        int_regs = [registers.r14, registers.r13, registers.r12, registers.r11]
+        int_regs = [registers.r12, registers.r11, registers.r10, registers.r9]
         for arg_type in arg_types:
             # Determine register:
             if arg_type in [
@@ -73,10 +73,12 @@ class PUC8Arch(Architecture):
         # Allocate stack and set frame pointer
         if frame.stacksize > 0:
             yield instructions.Push(registers.fp)
-            yield instructions.LdSP(registers.fp)
+            yield self.move(registers.fp, registers.sp)
 
-            for i in range(frame.stacksize):
-                yield instructions.Push(registers.r11)
+            ss = frame.stacksize
+            while ss > 0:
+                yield instructions.SubC(registers.sp, registers.sp, min(ss, 15))
+                ss -= 15
 
         # Callee save registers:
         for reg in self.get_callee_saved(frame):
@@ -90,13 +92,15 @@ class PUC8Arch(Architecture):
 
         # Restore stack and frame pointers
         if frame.stacksize > 0:
-            for i in range(frame.stacksize):
-                yield instructions.Pop(registers.r11)
+            ss = frame.stacksize
+            while ss > 0:
+                yield instructions.AddC(registers.sp, registers.sp, min(ss, 15))
+                ss -= 15
                 
             yield instructions.Pop(registers.fp)
 
         # Return
-        yield instructions.Ret()
+        yield instructions.Pop(registers.pc)
 
     def get_callee_saved(self, frame):
         saved_registers = []
@@ -120,7 +124,7 @@ class PUC8Arch(Architecture):
 
         yield RegisterUseDef(uses=arg_regs)
 
-        yield instructions.Call(label, clobbers=registers.caller_save)
+        yield instructions.CallL(label, clobbers=registers.caller_save)
 
         if rv:
             retval_loc = self.determine_rv_location(rv[0])
@@ -152,4 +156,4 @@ class PUC8Arch(Architecture):
         yield RegisterUseDef(uses=live_out)
 
     def move(self, dst, src):
-        return instructions.Mov(dst, src)
+        return instructions.AddC(dst, src, 0)

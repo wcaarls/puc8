@@ -27,7 +27,7 @@ def emitasm(mem, f):
 def emitarray(section, f):
     print('(', file=f)
     for l, c in enumerate(section):
-        if (c[0] != '0000000000000000' and c[0] != '00000000') or c[1] != '':
+        if (c[0] != '00000000000000000' and c[0] != '00000000') or c[1] != '':
             print(f"    {l:3} => \"{c[0]}\", -- {c[1]}", file=f)
     print("     others => (others => '0'));", file=f)
 
@@ -39,7 +39,7 @@ def emitvhdl(mem, f):
 use ieee.std_logic_1164.all;
 
 package {pkg} is
-  type {pkg}ROMT is array(0 to 255) of std_logic_vector(15 downto 0);
+  type {pkg}ROMT is array(0 to 255) of std_logic_vector(16 downto 0);
   type {pkg}RAMT is array(0 to 255) of std_logic_vector(7 downto 0);
 
   constant {pkg}_rom: {pkg}ROMT := """, file=f, end='')
