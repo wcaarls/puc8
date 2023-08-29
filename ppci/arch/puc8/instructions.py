@@ -213,14 +213,16 @@ Add   = make_rrr("add",   8, 0)
 AddC  = make_rrc("add",   8, 1)
 Sub   = make_rrr("sub",   9, 0)
 SubC  = make_rrc("sub",   9, 1)
-Sh    = make_rrr("sh",   10, 0)
-ShC   = make_rrc("sh",   10, 1)
+Shl   = make_rrr("shl",  10, 0)
+ShlC  = make_rrc("shl",  10, 1)
+Shr   = make_rrr("shr",  11, 0)
+ShrC  = make_rrc("shr",  11, 1)
 And   = make_rrr("and",  12, 0)
-Clr   = make_rrc("clr",  12, 1)
+AndC  = make_rrc("and",  12, 1)
 Orr   = make_rrr("orr",  13, 0)
-Set   = make_rrc("set",  13, 1)
+OrrC  = make_rrc("orr",  13, 1)
 EOr   = make_rrr("eor",  14, 0)
-Flip  = make_rrc("flip", 14, 1)
+EOrC  = make_rrc("eor",  14, 1)
 
 @isa.pattern("reg", "ADDI8(reg, reg)")
 @isa.pattern("reg", "ADDU8(reg, reg)")
@@ -316,9 +318,9 @@ def pattern_mul(context, tree, c0):
     n = log2(tree[1].value) - 1
     assert(n.is_integer())
     d = context.new_reg(PUC8Register)
-    context.emit(ShC(d, c0, 1))
+    context.emit(ShlC(d, c0, 1))
     for i in range(int(n)):
-        context.emit(ShC(d, d, 1))
+        context.emit(ShlC(d, d, 1))
     return d
 
 @isa.pattern("reg", "SHLI8(reg, CONSTU8)")
@@ -331,9 +333,9 @@ def pattern_shl(context, tree, c0):
         
     assert(tree[1].value > 0)
     d = context.new_reg(PUC8Register)
-    context.emit(ShC(d, c0, 1))
+    context.emit(ShlC(d, c0, 1))
     for i in range(tree[1].value-1):
-      context.emit(ShC(d, d, 1))
+      context.emit(ShlC(d, d, 1))
     return d
 
 @isa.pattern("reg", "SHRI8(reg, CONSTU8)")
@@ -346,9 +348,9 @@ def pattern_shr(context, tree, c0):
         
     assert(tree[1].value > 0)
     d = context.new_reg(PUC8Register)
-    context.emit(ShC(d, c0, -1))
+    context.emit(ShrC(d, c0, 1))
     for i in range(tree[1].value-1):
-      context.emit(ShC(d, d, -1))
+      context.emit(ShrC(d, d, 1))
     return d
 
 @isa.pattern("reg", "FPRELU8")

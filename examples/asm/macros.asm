@@ -28,6 +28,6 @@ _wait: ldr  r10, [@ldr]; Read LCD data
 _wait: ldr  $0, [@lcr] ; Read LCD command
        mov  $0, $0     ; Set flags
        bnz  @_wait     ; Wait until zero
-       ldr  $0, 0x01   ;
+       mov  $0, 0x01   ;
        str  $0, [@lcr] ; Clear LCD
        .endmacro

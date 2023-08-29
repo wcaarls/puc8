@@ -88,7 +88,7 @@ class Simulator:
                 raise RuntimeError('Stack overflow')
             next.mem[state.regs[14]] =  state.regs[r1]
             next.regs[14] -= 1
-        elif m == 'pop':
+        elif m == 'pop' or m == 'ret':
             if state.regs[14] == 255:
                 raise RuntimeError('Stack underflow')
             next.regs[r1] = state.mem[state.regs[14]+1]
@@ -101,28 +101,22 @@ class Simulator:
             next.regs[14] -= 1
         else:
             # ALU instructions (modify flags)
-            if m == 'add' or opcode == '10001':
+            if m == 'add' or m == 'mov':
                 res = state.regs[r2] + (c4 if imm else state.regs[r3])
             elif m == 'sub':
                 res = state.regs[r2] + (256-(c4 if imm else state.regs[r3]))
-            elif m == 'shft':
-                val = c4i if imm else state.regs[r3]
-                if val > 127:
-                    res = state.regs[r2] >> 1
-                else:
-                    res = state.regs[r2] << 1
+            elif m == 'shl':
+                val = c4 if imm else state.regs[r3]
+                res = state.regs[r2] << (val > 0)
+            elif m == 'shr':
+                val = c4 if imm else state.regs[r3]
+                res = state.regs[r2] >> (val > 0)
             elif m == 'and':
-                res = state.regs[r2] & state.regs[r3]
-            elif m == 'clr':
-                res = state.regs[r2] & ~(1<<c4)
+                res = state.regs[r2] & ((1<<c4) if imm else state.regs[r3])
             elif m == 'orr':
-                res = state.regs[r2] | state.regs[r3]
-            elif m == 'set':
-                res = state.regs[r2] | (1<<c4)
+                res = state.regs[r2] | ((1<<c4) if imm else state.regs[r3])
             elif m == 'eor':
-                res = state.regs[r2] ^ state.regs[r3]
-            elif m == 'flip':
-                res = state.regs[r2] ^ (1<<c4)
+                res = state.regs[r2] ^ ((1<<c4) if imm else state.regs[r3])
             else:
                 raise ValueError(f'Unknown opcode {opcode}')
 
