@@ -1,4 +1,4 @@
-; Example Macros for ENG1448 processor
+; Example macros for ENG1448 processor
 
 ; Wait for keyboard character.
 ; INPUT : None

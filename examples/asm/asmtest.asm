@@ -57,15 +57,16 @@ inst:   ldr  r1, [r2]
         add r1, r2, 1
         sub r1, r2, r3
         sub r1, r2, 1
-        shft r1, r2, r3
-        shft r1, r2, 1
-        shft r1, r2, -1
+        shl r1, r2, r3
+        shl r1, r2, 1
+        shr r1, r2, r3
+        shr r1, r2, 1
         and r1, r2, r3
-        clr r1, r2, 1
+        and r1, r2, 1
         orr r1, r2, r3
-        set r1, r2, 1
+        orr r1, r2, 1
         eor r1, r2, r3
-        flip r1, r2, 1
+        eor r1, r2, 1
 
         b 1
         b @mylbl
