@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
-import argparse, subprocess
+import glob, subprocess
 from typing import Sequence
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('filenames', nargs='*')
-    args = parser.parse_args(argv)
+    filenames = glob.glob('examples/asm/*.asm')
 
     retval = 0
-    for filename in args.filenames:
+    for filename in filenames:
         code = subprocess.run(['./as.py', filename, '-o', '/dev/null']).returncode
         if code != 0:
             print(f'{filename}: failed assembly')

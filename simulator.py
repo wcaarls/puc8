@@ -205,3 +205,15 @@ class Simulator:
             if diff != '':
                 print('     ' + diff)
             state = copy.deepcopy(next)
+
+    def run(self, mem, steps=1000):
+        """Simulate machine code for a set number of steps and return PC."""
+        state = State()
+        for i, c in enumerate(mem['data']):
+            state.mem[i] = int(c[0], 2)
+
+        for s in range(steps):
+            bin = mem['code'][state.regs[15]][0]
+            state = copy.deepcopy(self.execute(bin, state))
+
+        return state.regs[15]

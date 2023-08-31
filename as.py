@@ -18,6 +18,8 @@ def main():
                         help='Output file', default='-')
     parser.add_argument('-s', '--simulate', action='store_true',
                         help='Simulate resulting program')
+    parser.add_argument('-t', '--test', metavar='N', type=int,
+                        help='Simulate for 1000 steps and check whether PC == N')
     parser.add_argument('-E', action='store_true',
                         help='Output preprocessed assembly code')
 
@@ -39,9 +41,14 @@ def main():
         ass = Assembler()
         mem = ass.process(asm)
 
-        if args.simulate:
+        if args.simulate or args.test:
             sim = Simulator()
-            sim.process(mem)
+            if args.simulate:
+                sim.process(mem)
+            else:
+                pc = sim.run(mem, 1000)
+                if pc != args.test:
+                    raise RuntimeError('PC after 1000 steps is ' + str(pc) + ', expected ' + str(args.test))
         else:
             emitvhdl(mem, f)
 

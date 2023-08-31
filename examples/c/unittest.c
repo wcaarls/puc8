@@ -12,11 +12,10 @@ void testinc(int ii, int jj)
   if (--jj != 13) error();
 }
 
-char a[] = "Hallo!";
-
 void main(void)
 {
   int ii = 12, jj = 13;
+  unsigned int a = 12, b = 13;
 
   if (12U == 13U) error();
   if (12U > 13U) error();
@@ -34,4 +33,13 @@ void main(void)
   if ((12^13) != 1) error();
 
   testinc(ii, jj);
+
+  if (ii == jj) error();
+  if (ii != ii) error();
+
+  if (a > b) error();
+  if (a >= b) error();
+  if (b < a) error();
+  if (b <= a) error();
+  if (a != a) error();
 }
