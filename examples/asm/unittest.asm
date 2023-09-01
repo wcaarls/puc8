@@ -1,6 +1,6 @@
 ; Unit tests for ENG1448 processor
 ; When successful, halts at instruction 226, showing 0b01010101
-; When unsuccessful, halts at instruction 240, showing test number (1-26)
+; When unsuccessful, halts at instruction 240, showing test number (1-32)
 
        .macro setled
        mov  r12, $0
@@ -148,21 +148,71 @@ shr2:  setled 21
        sub  r11, r0, r5
        bnz  @err
 
-bz1:   setled 22
+and1:  setled 22
+       and  r11, r5, r10
+       bnz  @err
+       and  r11, r5, r5
+       sub  r11, r11, r5
+       bnz  @err
+
+and2:  setled 23
+       and  r11, r5, 2
+       bz   @err
+       and  r11, r5, 3
+       bnz  @err
+
+orr1:  setled 24
+       mov  r1, 255
+       orr  r11, r5, r10
+       sub  r11, r11, r1
+       bnz  @err
+       orr  r11, r5, r5
+       sub  r11, r11, r5
+       bnz  @err
+
+orr2:  setled 25
+       orr  r11, r5, 2
+       sub  r11, r11, r5
+       bnz  @err
+       orr  r11, r5, 1
+       add  r9, r5, 2
+       sub  r11, r11, r9
+       bnz  @err
+
+eor1:  setled 26
+       mov  r1, 255
+       eor  r11, r5, r10
+       sub  r11, r11, r1
+       bnz  @err
+       eor  r11, r5, r1
+       sub  r11, r11, r10
+       bnz  @err
+
+eor2:  setled 27
+       eor  r11, r5, 2
+       sub  r9, r5, 4
+       sub  r11, r11, r9
+       bnz  @err
+       eor  r11, r5, 1
+       add  r9, r5, 2
+       sub  r11, r11, r9
+       bnz  @err
+
+bz1:   setled 28
        sub  r11, r5, r5
        bz   @bz2
        b    @err
 bz2:   sub  r11, r10, r5
        bz   @err
 
-bnz1:  setled 23
+bnz1:  setled 29
        sub  r11, r10, r5
        bnz  @bnz2
        b    @err
 bnz2:  sub  r11, r5, r5
        bnz  @err
 
-bcs1:  setled 24
+bcs1:  setled 30
        shl  r11, r10, 1
        bcs  @bcs2
        b    @err
@@ -171,11 +221,11 @@ bcs2:  shl  r11, r5, 1
        add  r11, r10, r10
        bcs  @bcs3
        b    @err
-bcs3:  setled 25
+bcs3:  setled 31
        sub  r11, r5, r10
        bcs  @err
 
-bcc1:  setled 26
+bcc1:  setled 32
        shl  r11, r5, 1
        bcc  @bcc2
        b    @err
