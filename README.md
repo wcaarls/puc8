@@ -33,43 +33,40 @@ There are 16 registers. r14 is sp; r15 is pc. The C compiler uses r13 as fp.
 
 ## Instructions
 
-T = target register, R = source register 1, S = source register 2, C = immediate value, F = Condition
-
 All ALU instructions and MOV set flags.
 
-| Group | Op  | Immediate | Nibble 1  | Nibble 2  | Nibble 3  | Mnemonic | Effect | Example |
+| Group(2) | Op(2)  | Immediate(1) | Nibble 1(4)  | Nibble 2(4)  | Nibble 3(4)  | Mnemonic | Effect | Example |
 |---|---|---|---|---|---|---|---|---|
-| 00 | 00 | 0 | TTTT | RRRR | CCCC | LDR  | Rt <- [Rr + C[^1]] | ldr  r0, [r1, 4] |
-| 00 | 00 | 1 | TTTT | CCCC | CCCC | LDR  | Rt <- [C]      | ldr  r0, [254]   |
-| 00 | 01 | 0 | TTTT | RRRR | CCCC | STR  | [Rr + C[^1]] <- Rt | str  r0, [r1, 4] |
-| 00 | 01 | 1 | TTTT | CCCC | CCCC | STR  | [C] <- Rt      | str  r0, [254]   |
-| 00 | 10 | 1 | TTTT | CCCC | CCCC | MOV  | Rt <- C        | mov  r0, 254    |
-| 00 | 11 | 1 | FFFF | CCCC | CCCC | B    | if F then pc <- C        | B    254     |
-| 01 | 00 | 0 | TTTT | 0000 | 0000 | PUSH | [sp] <- Rt, sp <- sp - 1 | push r0 |
-| 01 | 01 | 0 | TTTT | 0000 | 0000 | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- Rt | call r0 |
-| 01 | 01 | 1 | 0000 | CCCC | CCCC | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- C | call 254 |
-| 01 | 10 | 0 | TTTT | 0000 | 0000 | POP  | Rt <- [sp + 1], sp <- sp + 1 | pop r0 |
-| 10 | 00 | 0 | TTTT | RRRR | SSSS | ADD  | Rt <- Rr + Rs | add r0, r1, r2 |
-| 10 | 00 | 1 | TTTT | RRRR | CCCC | ADD  | Rt <- Rr + C | add r0, r1, 4 |
-| 10 | 01 | 0 | TTTT | RRRR | SSSS | SUB  | Rt <- Rr - Rs | sub r0, r1, r2 |
-| 10 | 01 | 1 | TTTT | RRRR | CCCC | SUB  | Rt <- Rr - C | sub r0, r1, 4 |
-| 10 | 10 | 0 | TTTT | RRRR | SSSS | SHL  | Rt <- Rr << Rs | shl r0, r1, r2[^2] |
-| 10 | 10 | 1 | TTTT | RRRR | CCCC | SHL  | Rt <- Rr << C | shl r0, r1, 1[^2] |
-| 10 | 11 | 0 | TTTT | RRRR | SSSS | SHR  | Rt <- Rr >> Rs | shr r0, r1, r2[^2] |
-| 10 | 11 | 1 | TTTT | RRRR | CCCC | SHR  | Rt <- Rr >> C | shr r0, r1, 1[^2] |
-| 11 | 00 | 0 | TTTT | RRRR | SSSS | AND  | Rt <- Rr & Rs | and r0, r1, r2 |
-| 11 | 00 | 1 | TTTT | RRRR | CCCC | AND  | Rt <- Rr & (1<<C) | and r0, r1, 4 |
-| 11 | 01 | 0 | TTTT | RRRR | SSSS | ORR  | Rt <- Rr \| Rs | orr r0, r1, r2 |
-| 11 | 01 | 1 | TTTT | RRRR | CCCC | ORR  | Rt <- Rr \| (1<<C) | orr r0, r1, 4 |
-| 11 | 10 | 0 | TTTT | RRRR | SSSS | EOR  | Rt <- Rr ^ Rs | eor r0, r1, r2 |
-| 11 | 10 | 1 | TTTT | RRRR | CCCC | EOR  | Rt <- Rr ^ (1<<C) | eor r0, r1, 4 |
+| 00 | 00 | 0 | rd   | rs        | c4i       | LDR  | rd <- [rs + c4i]                        | ldr  r0, [r1, 4]    |
+| 00 | 00 | 1 | rd   | c8u(7..4) | c8u(3..0) | LDR  | rd <- [c8u]                             | ldr  r0, [254]      |
+| 00 | 01 | 0 | rs   | rd        | c4i       | STR  | [rd + c4i] <- rs                        | str  r0, [r1, 4]    |
+| 00 | 01 | 1 | rs   | c8u(7..4) | c8u(3..0) | STR  | [c8u] <- rs                             | str  r0, [254]      |
+| 00 | 10 | 1 | rd   | c8u(7..4) | c8u(3..0) | MOV  | rd <- c8u                               | mov  r0, 254        |
+| 00 | 11 | 1 | cond | c8u(7..4) | c8u(3..0) | B    | if cond then pc <- c8u                  | b    254            |
+| 01 | 00 | 0 | rs   | 0000      | 0000      | PUSH | [sp] <- rs, sp <- sp - 1                | push r0             |
+| 01 | 01 | 0 | rs   | 0000      | 0000      | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- rs  | call r0             |
+| 01 | 01 | 1 | 0000 | c8u(7..4) | c8u(3..0) | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- c8u | call 254            |
+| 01 | 10 | 0 | rd   | 0000      | 0000      | POP  | rd <- [sp + 1], sp <- sp + 1            | pop  r0             |
+| 10 | 00 | 0 | rd   | rs1       | rs2       | ADD  | rd <- rs1 + rs2                         | add  r0, r1, r2     |
+| 10 | 00 | 1 | rd   | rs        | c4u       | ADD  | rd <- rs + c4u                          | add  r0, r1, 4      |
+| 10 | 01 | 0 | rd   | rs1       | rs2       | SUB  | rd <- rs1 - rs2                         | sub  r0, r1, r2     |
+| 10 | 01 | 1 | rd   | rs        | c4u       | SUB  | rd <- rs - c4u                          | sub  r0, r1, 4      |
+| 10 | 10 | 0 | rd   | rs1       | rs2       | SHL  | rd <- rs1 << rs2                        | shl  r0, r1, r2[^1] |
+| 10 | 10 | 1 | rd   | rs        | c4u       | SHL  | rd <- rs << c4u                         | shl  r0, r1, 1[^1]  |
+| 10 | 11 | 0 | rd   | rs1       | rs2       | SHR  | rd <- rs1 >> rs2                        | shr  r0, r1, r2[^1] |
+| 10 | 11 | 1 | rd   | rs        | c4u       | SHR  | rd <- rs >> c4u                         | shr  r0, r1, 1[^1]  |
+| 11 | 00 | 0 | rd   | rs1       | rs2       | AND  | rd <- rs1 & rs2                         | and  r0, r1, r2     |
+| 11 | 00 | 1 | rd   | rs        | c4u       | AND  | rd <- rs & (1<<c4u)                     | and  r0, r1, 4      |
+| 11 | 01 | 0 | rd   | rs1       | rs2       | ORR  | rd <- rs1 \| rs2                        | orr  r0, r1, r2     |
+| 11 | 01 | 1 | rd   | rs        | c4u       | ORR  | rd <- rs \| (1<<c4u)                    | orr  r0, r1, 4      |
+| 11 | 10 | 0 | rd   | rs1       | rs2       | EOR  | rd <- rs1 ^ rs2                         | eor  r0, r1, r2     |
+| 11 | 10 | 1 | rd   | rs        | c4u       | EOR  | rd <- rs ^ (1<<c4u)                     | eor  r0, r1, 4      |
 
-[^1]: Signed constant.
-[^2]: Only shifts of 0 and 1 are required to be supported.
+[^1]: Only shifts of 0 and 1 are required to be supported.
 
 ## Pseudo-instructions
 
-| Pseudo-instruction | Actual instruction | 
+| Pseudo-instruction | Actual instruction |
 |---|---|
 | mov r0, r1 | add r0, r1, 0 |
 | ret | pop pc |
