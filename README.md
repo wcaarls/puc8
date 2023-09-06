@@ -62,12 +62,16 @@ All ALU instructions and MOV set flags.
 | 11 | 10 | 0 | rd   | rs1       | rs2       | EOR  | rd <- rs1 ^ rs2                         | eor  r0, r1, r2     |
 | 11 | 10 | 1 | rd   | rs        | c4u       | EOR  | rd <- rs ^ (1<<c4u)                     | eor  r0, r1, 4      |
 
-[^1]: Only shifts of 0 and 1 are required to be supported.
+[^1]: May be implemented as a constant shift of 1.
 
 ## Pseudo-instructions
 
 | Pseudo-instruction | Actual instruction |
 |---|---|
+| beq | bz |
+| bne | bnz |
+| bhs | bcs |
+| blo | bcc |
 | mov r0, r1 | add r0, r1, 0 |
 | ret | pop pc |
 

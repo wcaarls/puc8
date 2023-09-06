@@ -72,9 +72,13 @@ inst:   ldr  r1, [r2]
         b @mylbl
 
         bz 1
+        beq 1
         bnz 1
+        bne 1
         bcs 1
+        bhs 1
         bcc 1
+        blo 1
 
         call 1
         ret
