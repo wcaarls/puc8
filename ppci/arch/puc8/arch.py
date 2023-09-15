@@ -70,6 +70,10 @@ class PUC8Arch(Architecture):
         # Label indication function:
         yield Label(frame.name)
         
+        # Callee save registers:
+        for reg in self.get_callee_saved(frame):
+            yield instructions.Push(reg)
+        
         # Allocate stack and set frame pointer
         if frame.stacksize > 0:
             yield instructions.Push(registers.fp)
@@ -80,16 +84,8 @@ class PUC8Arch(Architecture):
                 yield instructions.SubC(registers.sp, registers.sp, min(ss, 15))
                 ss -= 15
 
-        # Callee save registers:
-        for reg in self.get_callee_saved(frame):
-            yield instructions.Push(reg)
-
     def gen_epilogue(self, frame):
         """ Return epilogue sequence """
-        # Pop save registers back:
-        for reg in reversed(self.get_callee_saved(frame)):
-            yield instructions.Pop(reg)
-
         # Restore stack and frame pointers
         if frame.stacksize > 0:
             ss = frame.stacksize
@@ -98,6 +94,10 @@ class PUC8Arch(Architecture):
                 ss -= 15
                 
             yield instructions.Pop(registers.fp)
+
+        # Pop save registers back:
+        for reg in reversed(self.get_callee_saved(frame)):
+            yield instructions.Pop(reg)
 
         # Return
         yield instructions.Pop(registers.pc)
@@ -156,4 +156,4 @@ class PUC8Arch(Architecture):
         yield RegisterUseDef(uses=live_out)
 
     def move(self, dst, src):
-        return instructions.AddC(dst, src, 0)
+        return instructions.AddC(dst, src, 0, ismove=True)

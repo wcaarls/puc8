@@ -7,6 +7,7 @@ from ..token import Token, bit_range, Endianness
 from .registers import PUC8Register
 from . import registers
 from math import log2
+from .. import effects
 
 isa = Isa()
 
@@ -197,6 +198,7 @@ StrL  = make_rc ("str",   1, 1, write=False, addr=True, label=True)
 Mov   = make_rc ("mov",   2, 1)
 MovL  = make_rc ("mov",   2, 1, label=True)
 B     = make_c  ("b",     3, 1, 0)
+B.effect = lambda self: [effects.Assign(effects.PC, self.c8)]
 BZ    = make_c  ("bz",    3, 1, 1)
 BNZ   = make_c  ("bnz",   3, 1, 2)
 BCS   = make_c  ("bcs",   3, 1, 3)
@@ -444,7 +446,7 @@ def pattern_mov(context, tree):
 @isa.pattern("stm", "MOVU8(reg)")
 def pattern_movr(context, tree, c0):
     d = tree.value
-    context.emit(AddC(d, c0, 0))
+    context.emit(AddC(d, c0, 0, ismove=True))
 
 @isa.pattern("reg", "REGI8", size=0, cycles=0, energy=0)
 @isa.pattern("reg", "REGU8", size=0, cycles=0, energy=0)
