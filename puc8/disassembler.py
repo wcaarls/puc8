@@ -2,7 +2,7 @@
    (c) 2020-2023 Wouter Caarls, PUC-Rio
 """
 
-from instructions import defs
+from .instructions import defs
 
 class Disassembler():
     def __init__(self, map=None):

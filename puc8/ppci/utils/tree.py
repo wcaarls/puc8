@@ -5,7 +5,7 @@ parse tree structures from text.
 
 """
 
-from ppci.lang.tools.baselex import BaseLexer
+from ..lang.tools.baselex import BaseLexer
 
 
 class Tree:

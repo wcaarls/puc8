@@ -57,7 +57,7 @@ def make_rrc(mnemonic, opcode, immediate, addr=False, write=True):
         syntax = Syntax([mnemonic, " ", r1, ",", " ", "[", r2, ",", " ", c4, "]"])
     else:
         syntax = Syntax([mnemonic, " ", r1, ",", " ", r2, ",", " ", c4])
-    
+
     patterns = {
         "opcode": opcode,
         "immediate": immediate,
@@ -80,9 +80,9 @@ def make_r(mnemonic, opcode, immediate, minor8=0, write=True):
         r1 = Operand("r1", PUC8Register, write=True)
     else:
         r1 = Operand("r1", PUC8Register, read=True)
-    
+
     syntax = Syntax([mnemonic, " ", r1])
-    
+
     patterns = {
         "opcode": opcode,
         "immediate": immediate,
@@ -117,17 +117,17 @@ def make_rc(mnemonic, opcode, immediate, write=True, addr=False, label=False):
         r1 = Operand("r1", PUC8Register, write=True)
     else:
         r1 = Operand("r1", PUC8Register, read=True)
-    
+
     if label:
         c8 = Operand("c8", str)
     else:
         c8 = Operand("c8", int)
-    
+
     if addr:
         syntax = Syntax([mnemonic, " ", r1, ",", "[", c8, "]"])
     else:
         syntax = Syntax([mnemonic, " ", r1, ",", " ", c8])
-    
+
     patterns = {
         "opcode": opcode,
         "immediate": immediate,
@@ -168,9 +168,9 @@ def make_c(mnemonic, opcode, immediate, minor4, label=True):
         c8 = Operand("c8", str)
     else:
         c8 = Operand("c8", int)
-    
+
     syntax = Syntax([mnemonic, " ", c8])
-    
+
     patterns = {
         "opcode": opcode,
         "immediate": immediate,
@@ -266,7 +266,7 @@ def pattern_subc(context, tree, c0):
     d = context.new_reg(PUC8Register)
     context.emit(SubC(d, c0, tree[1].value))
     return d
-    
+
 @isa.pattern("reg", "SUBI8(CONSTI8, reg)", condition=lambda t: t[0].value >= 0 and t[0].value <= 15)
 @isa.pattern("reg", "SUBU8(CONSTU8, reg)", condition=lambda t: t[0].value >= 0 and t[0].value <= 15)
 @isa.pattern("reg", "SUBI8(CONSTI8, reg)", condition=lambda t: t[0].value >= 0 and t[0].value <= 15)
@@ -275,7 +275,7 @@ def pattern_subc(context, tree, c0):
     d = context.new_reg(PUC8Register)
     context.emit(SubC(d, c0, tree[0].value))
     return d
-    
+
 @isa.pattern("reg", "NEGI8(reg, reg)", size=2, cycles=2, energy=2)
 def pattern_neg(context, tree, c0):
     d = context.new_reg(PUC8Register)
@@ -315,7 +315,7 @@ def pattern_mul(context, tree, c0):
         return d
     elif tree[1].value == 1:
         return c0
-       
+
     assert(tree[1].value > 1)
     n = log2(tree[1].value) - 1
     assert(n.is_integer())
@@ -332,7 +332,7 @@ def pattern_mul(context, tree, c0):
 def pattern_shl(context, tree, c0):
     if tree.value == 0:
         return c0
-        
+
     assert(tree[1].value > 0)
     d = context.new_reg(PUC8Register)
     context.emit(ShlC(d, c0, 1))
@@ -347,7 +347,7 @@ def pattern_shl(context, tree, c0):
 def pattern_shr(context, tree, c0):
     if tree.value == 0:
         return c0
-        
+
     assert(tree[1].value > 0)
     d = context.new_reg(PUC8Register)
     context.emit(ShrC(d, c0, 1))
@@ -374,7 +374,7 @@ def pattern_fprelu8(context, tree):
 @isa.pattern("stm", "STRU8(reg, reg)", energy=2)
 def pattern_str(context, tree, c0, c1):
     context.emit(Str(c1, c0, 0))
-    
+
 @isa.pattern("stm", "STRI8(ADDU8(reg, CONSTI8), reg)", energy=2, condition=lambda t: t[0][1].value >= -8 and t[0][1].value <= 7)
 @isa.pattern("stm", "STRU8(ADDU8(reg, CONSTI8), reg)", energy=2, condition=lambda t: t[0][1].value >= -8 and t[0][1].value <= 7)
 @isa.pattern("stm", "STRI8(ADDU8(reg, CONSTU8), reg)", energy=2, condition=lambda t: t[0][1].value >= -8 and t[0][1].value <= 7)
@@ -391,12 +391,12 @@ def pattern_strfp(context, tree, c0):
 @isa.pattern("stm", "STRU8(CONSTU8, reg)", energy=2)
 def pattern_strc(context, tree, c0):
     context.emit(StrC(c0, tree[0].value))
-    
+
 @isa.pattern("stm", "STRI8(LABEL, reg)", energy=2)
 @isa.pattern("stm", "STRU8(LABEL, reg)", energy=2)
 def pattern_strl(context, tree, c0):
     context.emit(StrL(c0, tree[0].value))
-    
+
 @isa.pattern("reg", "LDRI8(reg)", energy=2)
 @isa.pattern("reg", "LDRU8(reg)", energy=2)
 def pattern_ldr(context, tree, c0):

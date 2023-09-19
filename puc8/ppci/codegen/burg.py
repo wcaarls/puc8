@@ -59,9 +59,9 @@ tree. This strategy consists of two steps:
 import sys
 from os import path
 import argparse
-from ppci.lang.common import Token, SourceLocation
-from ppci.lang.tools import baselex, yacc
-from ppci.utils.tree import Tree
+from ..lang.common import Token, SourceLocation
+from ..lang.tools import baselex, yacc
+from ..utils.tree import Tree
 
 # Generate parser on the fly:
 spec_file = path.join(path.dirname(path.abspath(__file__)), "burg.grammar")
@@ -284,9 +284,9 @@ class BurgGenerator:
 
         self.print(0, "#!/usr/bin/python")
         self.print(
-            0, "from ppci.codegen.treematcher import BaseMatcher, State"
+            0, "from puc8.ppci.codegen.treematcher import BaseMatcher, State"
         )
-        self.print(0, "from ppci.utils.tree import Tree")
+        self.print(0, "from puc8.ppci.utils.tree import Tree")
         for header in self.system.header_lines:
             self.print(0, header)
         self.print(0)

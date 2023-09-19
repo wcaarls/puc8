@@ -8,7 +8,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     retval = 0
     for filename in filenames:
-        code = subprocess.run(['./cc.py', filename, '-o', '/dev/null']).returncode
+        code = subprocess.run(['python', '-m', 'puc8.cc', filename, '-o', '/dev/null']).returncode
         if code != 0:
             print(f'{filename}: failed compilation')
             retval = 1

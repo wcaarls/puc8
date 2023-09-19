@@ -1219,7 +1219,7 @@ class InlineAsm(Instruction):
         self.clobbers = clobbers
         self.input_values = []
         self.output_values = []
-    
+
     def add_input_variable(self, value):
         """ Add an value as input to this assembly stuff. """
         self.input_values.append(value)

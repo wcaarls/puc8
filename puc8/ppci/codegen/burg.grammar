@@ -28,4 +28,3 @@ cost: number { return $1.val };
 tree: id { return self.system.tree($1.val) }
     | id '(' tree ')' { return self.system.tree($1.val, $3) }
     | id '(' tree ',' tree ')' { return self.system.tree($1.val, $3, $5) };
-

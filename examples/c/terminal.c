@@ -23,8 +23,7 @@ void main(void)
       for (int ii=0; buf[ii]; ++ii)
         writechar(buf[ii], LDR);
     }
-
-    if (c != 0)
+    else if (c != 0)
     {
       // Echo character
       writechar(c, LDR);

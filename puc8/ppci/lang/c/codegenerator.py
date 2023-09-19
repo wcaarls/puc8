@@ -796,7 +796,7 @@ class CCodeGenerator:
         for _, asm_output_expr in stmt.output_operands:
             asm_output_ir = self.gen_expr(asm_output_expr)
             inline_asm.add_output_variable(asm_output_ir)
-        
+
         # Emit inline assembly:
         self.emit(inline_asm)
 

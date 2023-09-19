@@ -4,16 +4,16 @@
 
 import io
 
-from ppci.api import asm, cc, link, optimize
-from ppci.lang.c import c_to_ir
-from ppci.irutils import to_json
-from ppci.binutils.layout import LayoutLoader
-from ppci.common import DiagnosticsManager
-from ppci.binutils.outstream import BinaryOutputStream
-from ppci.arch import get_arch
-from ppci.binutils.objectfile import ObjectFile, Image, merge_memories
+from .ppci.api import asm, cc, link, optimize
+from .ppci.lang.c import c_to_ir
+from .ppci.irutils import to_json
+from .ppci.binutils.layout import LayoutLoader
+from .ppci.common import DiagnosticsManager
+from .ppci.binutils.outstream import BinaryOutputStream
+from .ppci.arch import get_arch
+from .ppci.binutils.objectfile import ObjectFile, Image, merge_memories
 
-from disassembler import Disassembler
+from .disassembler import Disassembler
 
 def assemble(src, section):
     """Assemble into a specific section."""

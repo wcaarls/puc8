@@ -384,7 +384,7 @@ class SelectionGraphBuilder:
             assert False, "Currently, asm uses at most 3 output registers"
 
         output_registers = []
-                
+
         sgnode = self.new_node(
             "ASM",
             None,
@@ -397,10 +397,10 @@ class SelectionGraphBuilder:
         )
         self.chain(sgnode)
         self.debug_db.map(node, sgnode)
-        
+
         for i,(reg,addr) in enumerate(zip(node.clobbers,node.output_values)):
             address = self.get_address(addr)
-            
+
             param_node = self.new_node("REG", address.ty, value=reg)
             output = param_node.new_output("ret_" + str(i))
             output.wants_vreg = False

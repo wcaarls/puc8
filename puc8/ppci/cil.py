@@ -151,4 +151,3 @@ opcodes = [
 class Instruction:
     def __init__(self, opcode):
         self.opcode = opcode
-

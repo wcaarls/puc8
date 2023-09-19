@@ -6,9 +6,9 @@
 
 import sys, argparse
 
-from assembler import Preprocessor, Assembler
-from simulator import Simulator
-from emitter import emitvhdl
+from .assembler import Preprocessor, Assembler
+from .simulator import Simulator
+from .emitter import emitvhdl
 
 def main():
     parser = argparse.ArgumentParser(description='PUC8 Assembler (c) 2020-2023 Wouter Caarls, PUC-Rio')
@@ -52,7 +52,8 @@ def main():
         else:
             emitvhdl(mem, f)
 
-    f.close()
+    if args.output != '-':
+        f.close()
 
 if __name__ == '__main__':
     main()

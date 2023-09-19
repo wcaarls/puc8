@@ -11,6 +11,7 @@ repos:
     -   id: check-docstring-first
     -   id: check-merge-conflict
     -   id: double-quote-string-fixer
+        exclude: "puc8/ppci/.*"
     -   id: mixed-line-ending
 -   repo: local
     hooks:
@@ -29,12 +30,12 @@ repos:
     -   id: asmunit
         name: Assembly unit tests
         language: python
-        entry: ./as.py examples/asm/unittest.asm -t 254
+        entry: python -m puc8.asm examples/asm/unittest.asm -t 254
         always_run: true
         pass_filenames: false
     -   id: cunit
         name: C unit tests
         language: python
-        entry: ./cc.py examples/c/unittest.c -O0 -t 1
+        entry: python -m puc8.cc examples/c/unittest.c -O0 -t 1
         always_run: true
         pass_filenames: false

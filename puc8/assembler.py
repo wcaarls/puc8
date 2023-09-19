@@ -3,7 +3,7 @@
 """
 
 import sys, os, string, math, re
-from instructions import defs
+from .instructions import defs
 
 def _split(s, delim=r'\s'):
     """https://stackoverflow.com/questions/16710076/python-split-a-string-respect-and-preserve-quotes"""

@@ -6,9 +6,9 @@
 
 import sys, argparse
 
-from compiler import compile, disasm
-from simulator import Simulator
-from emitter import emitasm, emitvhdl
+from .compiler import compile, disasm
+from .simulator import Simulator
+from .emitter import emitasm, emitvhdl
 
 def assemble(src, section):
     diag = DiagnosticsManager()
@@ -62,7 +62,8 @@ def main():
         else:
             emitvhdl(mem, f)
 
-        f.close()
+        if args.output != '-':
+            f.close()
 
 if __name__ == '__main__':
     main()

@@ -87,10 +87,24 @@ For an indirect branch, use mov pc, r0.
 | 0011 | Carry flag set |
 | 0100 | Carry flag not set |
 
+# Installation
+
+```
+pip install puc8
+```
+
+or
+
+```
+git clone https://github.com/wcaarls/puc8
+cd puc8
+pip install .
+```
+
 # Usage
 
 ```
-usage: as.py [-h] [-o OUTPUT] [-s] [-t N] [-E] file
+usage: as-puc8 [-h] [-o OUTPUT] [-s] [-t N] [-E] file
 
 PUC8 Assembler (c) 2020-2023 Wouter Caarls, PUC-Rio
 
@@ -108,7 +122,7 @@ options:
 ```
 
 ```
-usage: cc.py [-h] [-o OUTPUT] [-s] [-t N] [-S] [-O {0,1,2}] file
+usage: cc-puc8 [-h] [-o OUTPUT] [-s] [-t N] [-S] [-O {0,1,2}] file
 
 PUC8 C compiler (c) 2020-2023 Wouter Caarls, PUC-Rio
 
@@ -130,28 +144,28 @@ options:
 
 Directly compile C to VHDL
 ```
-./cc.py examples/c/hello.c
+./cc-puc8 examples/c/hello.c
 ```
 
 Create assembly from C
 ```
-./cc.py examples/c/hello.c -S
+./cc-puc8 examples/c/hello.c -S
 ```
 
 Assemble to VHDL code
 ```
-./as.py examples/asm/ps2_lcd.asm
+./as-puc8 examples/asm/ps2_lcd.asm
 ```
 
 Assemble to VHDL package
 ```
-./as.py examples/asm/ps2_lcd.asm -o ps2_lcd.vhdl
+./as-puc8 examples/asm/ps2_lcd.asm -o ps2_lcd.vhdl
 ```
 
 Simulate resulting C or assembly program
 ```
-./cc.py -O0 examples/c/testari.c -s
-./as.py examples/asm/simple.asm -s
+./cc-puc8 -O0 examples/c/unittest.c -s
+./as-puc8 examples/asm/simple.asm -s
 ```
 
 # Acknowledgments

@@ -3,7 +3,7 @@
 """
 
 import copy
-from disassembler import Disassembler
+from .disassembler import Disassembler
 
 class State:
     """Machine state for simulator."""

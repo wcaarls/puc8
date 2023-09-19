@@ -129,11 +129,11 @@ class XaccGenerator:
         self.print("#!/usr/bin/python")
         stamp = datetime.datetime.now().ctime()
         self.print('""" Automatically generated on {} """'.format(stamp))
-        self.print("from ppci.lang.tools.grammar import Production, Grammar")
+        self.print("from puc8.ppci.lang.tools.grammar import Production, Grammar")
         self.print(
-            "from ppci.lang.tools.lr import LrParser, Reduce, Shift, Accept"
+            "from puc8.ppci.lang.tools.lr import LrParser, Reduce, Shift, Accept"
         )
-        self.print("from ppci.lang.common import Token")
+        self.print("from puc8.ppci.lang.common import Token")
         self.print("")
         for h in self.headers:
             self.print(h)

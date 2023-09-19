@@ -33,7 +33,7 @@ class PUC8Arch(Architecture):
         )
 
         self.isa = instructions.isa + data_isa
-        
+
         self.assembler = BaseAssembler()
         self.assembler.gen_asm_parser(self.isa)
 
@@ -69,11 +69,11 @@ class PUC8Arch(Architecture):
         """ Returns prologue instruction sequence """
         # Label indication function:
         yield Label(frame.name)
-        
+
         # Callee save registers:
         for reg in self.get_callee_saved(frame):
             yield instructions.Push(reg)
-        
+
         # Allocate stack and set frame pointer
         if frame.stacksize > 0:
             yield instructions.Push(registers.fp)
@@ -92,7 +92,7 @@ class PUC8Arch(Architecture):
             while ss > 0:
                 yield instructions.AddC(registers.sp, registers.sp, min(ss, 15))
                 ss -= 15
-                
+
             yield instructions.Pop(registers.fp)
 
         # Pop save registers back:
