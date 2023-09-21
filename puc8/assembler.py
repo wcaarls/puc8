@@ -31,12 +31,17 @@ def split(s):
             operands[i] = 'r14'
         if o == '[sp]':
             operands[i] = '[r14]'
+        if o == 'fp':
+            operands[i] = 'r13'
+        if o == '[fp]':
+            operands[i] = '[r13]'
     return mnemonic, operands
 
 class Preprocessor:
-    """Preprocesses the source, resolving .include and .macro directives,
-    and normalizing the instructions."""
+    """Assembly preprocessor."""
     def process(self, file):
+        """Preprocesses the source, resolving .include and .macro directives,
+        and normalizing the instructions."""
         asm, _ = self._preprocess(file)
         return self._reindex(asm)
 
@@ -177,8 +182,9 @@ class Preprocessor:
         return ret
 
 class Assembler:
-    """Emits machine code for the normalized assembly."""
+    """Assembler for normalized assembly."""
     def process(self, asm):
+        """Emits machine code for normalized assembly."""
         labels = self._pass1(asm)
         return self._pass2(asm, labels)
 

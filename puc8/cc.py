@@ -10,18 +10,6 @@ from .compiler import compile, disasm
 from .simulator import Simulator
 from .emitter import emitasm, emitvhdl
 
-def assemble(src, section):
-    diag = DiagnosticsManager()
-    march = get_arch('puc8')
-    assembler = march.assembler
-    obj = ObjectFile(march)
-    ostream = BinaryOutputStream(obj)
-    ostream.select_section(section)
-    assembler.prepare()
-    assembler.assemble(src, ostream, diag)
-    assembler.flush()
-    return obj
-
 def main():
     parser = argparse.ArgumentParser(description='PUC8 C compiler (c) 2020-2023 Wouter Caarls, PUC-Rio')
     parser.add_argument('file', type=str,

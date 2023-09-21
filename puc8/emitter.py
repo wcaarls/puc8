@@ -5,6 +5,7 @@
 import os
 
 def emitasmsection(section, f):
+    """Emit assembly for a section."""
     addr = 0
     skipped = False
     for c in section:
@@ -19,12 +20,14 @@ def emitasmsection(section, f):
 
 
 def emitasm(mem, f):
+    """Emit assembly for code and data sections."""
     print('.section code', file=f)
     emitasmsection(mem['code'], f)
     print('.section data', file=f)
     emitasmsection(mem['data'], f)
 
 def emitarray(section, f):
+    """Emit a VHDL array for a section."""
     print('(', file=f)
     for l, c in enumerate(section):
         if (c[0] != '00000000000000000' and c[0] != '00000000') or c[1] != '':
@@ -32,6 +35,7 @@ def emitarray(section, f):
     print("     others => (others => '0'));", file=f)
 
 def emitvhdl(mem, f):
+    """Emit VHDL for code and data sections."""
     if f.name != '<stdout>':
         pkg = os.path.splitext(os.path.basename(f.name))[0]
         print(

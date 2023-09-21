@@ -29,38 +29,38 @@ This very simple processor is a Harvard design, with 17-bit instructions and 8-b
 
 ## Registers
 
-There are 16 registers. r14 is sp; r15 is pc. The C compiler uses r13 as fp.
+There are 16 registers. `r14` is `sp`; `r15` is `pc`. The C compiler uses `r13` as `fp`.
 
 ## Instructions
 
 All ALU instructions and MOV set flags.
 
-| Group(2) | Op(2)  | Immediate(1) | Nibble 1(4)  | Nibble 2(4)  | Nibble 3(4)  | Mnemonic | Effect | Example |
+| Group(2) | Op(2)  | Imm(1) | Nibble 1(4)  | Nibble 2(4)  | Nibble 3(4)  | Mnm | Effect | Example |
 |---|---|---|---|---|---|---|---|---|
-| 00 | 00 | 0 | rd   | rs        | c4i       | LDR  | rd <- [rs + c4i]                        | ldr  r0, [r1, 4]    |
-| 00 | 00 | 1 | rd   | c8u(7..4) | c8u(3..0) | LDR  | rd <- [c8u]                             | ldr  r0, [254]      |
-| 00 | 01 | 0 | rs   | rd        | c4i       | STR  | [rd + c4i] <- rs                        | str  r0, [r1, 4]    |
-| 00 | 01 | 1 | rs   | c8u(7..4) | c8u(3..0) | STR  | [c8u] <- rs                             | str  r0, [254]      |
-| 00 | 10 | 1 | rd   | c8u(7..4) | c8u(3..0) | MOV  | rd <- c8u                               | mov  r0, 254        |
-| 00 | 11 | 1 | cond | c8u(7..4) | c8u(3..0) | B    | if cond then pc <- c8u                  | b    254            |
-| 01 | 00 | 0 | rs   | 0000      | 0000      | PUSH | [sp] <- rs, sp <- sp - 1                | push r0             |
-| 01 | 01 | 0 | rs   | 0000      | 0000      | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- rs  | call r0             |
-| 01 | 01 | 1 | 0000 | c8u(7..4) | c8u(3..0) | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- c8u | call 254            |
-| 01 | 10 | 0 | rd   | 0000      | 0000      | POP  | rd <- [sp + 1], sp <- sp + 1            | pop  r0             |
-| 10 | 00 | 0 | rd   | rs1       | rs2       | ADD  | rd <- rs1 + rs2                         | add  r0, r1, r2     |
-| 10 | 00 | 1 | rd   | rs        | c4u       | ADD  | rd <- rs + c4u                          | add  r0, r1, 4      |
-| 10 | 01 | 0 | rd   | rs1       | rs2       | SUB  | rd <- rs1 - rs2                         | sub  r0, r1, r2     |
-| 10 | 01 | 1 | rd   | rs        | c4u       | SUB  | rd <- rs - c4u                          | sub  r0, r1, 4      |
-| 10 | 10 | 0 | rd   | rs1       | rs2       | SHL  | rd <- rs1 << rs2                        | shl  r0, r1, r2[^1] |
-| 10 | 10 | 1 | rd   | rs        | c4u       | SHL  | rd <- rs << c4u                         | shl  r0, r1, 1[^1]  |
-| 10 | 11 | 0 | rd   | rs1       | rs2       | SHR  | rd <- rs1 >> rs2                        | shr  r0, r1, r2[^1] |
-| 10 | 11 | 1 | rd   | rs        | c4u       | SHR  | rd <- rs >> c4u                         | shr  r0, r1, 1[^1]  |
-| 11 | 00 | 0 | rd   | rs1       | rs2       | AND  | rd <- rs1 & rs2                         | and  r0, r1, r2     |
-| 11 | 00 | 1 | rd   | rs        | c4u       | AND  | rd <- rs & (1<<c4u)                     | and  r0, r1, 4      |
-| 11 | 01 | 0 | rd   | rs1       | rs2       | ORR  | rd <- rs1 \| rs2                        | orr  r0, r1, r2     |
-| 11 | 01 | 1 | rd   | rs        | c4u       | ORR  | rd <- rs \| (1<<c4u)                    | orr  r0, r1, 4      |
-| 11 | 10 | 0 | rd   | rs1       | rs2       | EOR  | rd <- rs1 ^ rs2                         | eor  r0, r1, r2     |
-| 11 | 10 | 1 | rd   | rs        | c4u       | EOR  | rd <- rs ^ (1<<c4u)                     | eor  r0, r1, 4      |
+| 00 | 00 | 0 | rd   | rs        | c4i       | LDR  | rd <- [rs + c4i]                        | `ldr  r0, [r1, 4]`    |
+| 00 | 00 | 1 | rd   | c8u(7..4) | c8u(3..0) | LDR  | rd <- [c8u]                             | `ldr  r0, [254]`      |
+| 00 | 01 | 0 | rs   | rd        | c4i       | STR  | [rd + c4i] <- rs                        | `str  r0, [r1, 4]`    |
+| 00 | 01 | 1 | rs   | c8u(7..4) | c8u(3..0) | STR  | [c8u] <- rs                             | `str  r0, [254]`      |
+| 00 | 10 | 1 | rd   | c8u(7..4) | c8u(3..0) | MOV  | rd <- c8u                               | `mov  r0, 254`        |
+| 00 | 11 | 1 | cond | c8u(7..4) | c8u(3..0) | B    | if cond then pc <- c8u                  | `b    254`            |
+| 01 | 00 | 0 | rs   | 0000      | 0000      | PUSH | [sp] <- rs, sp <- sp - 1                | `push r0`             |
+| 01 | 01 | 0 | rs   | 0000      | 0000      | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- rs  | `call r0`             |
+| 01 | 01 | 1 | 0000 | c8u(7..4) | c8u(3..0) | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- c8u | `call 254`            |
+| 01 | 10 | 0 | rd   | 0000      | 0000      | POP  | rd <- [sp + 1], sp <- sp + 1            | `pop  r0`             |
+| 10 | 00 | 0 | rd   | rs1       | rs2       | ADD  | rd <- rs1 + rs2                         | `add  r0, r1, r2`     |
+| 10 | 00 | 1 | rd   | rs        | c4u       | ADD  | rd <- rs + c4u                          | `add  r0, r1, 4`      |
+| 10 | 01 | 0 | rd   | rs1       | rs2       | SUB  | rd <- rs1 - rs2                         | `sub  r0, r1, r2`     |
+| 10 | 01 | 1 | rd   | rs        | c4u       | SUB  | rd <- rs - c4u                          | `sub  r0, r1, 4`      |
+| 10 | 10 | 0 | rd   | rs1       | rs2       | SHL  | rd <- rs1 << rs2                        | `shl  r0, r1, r2`[^1] |
+| 10 | 10 | 1 | rd   | rs        | c4u       | SHL  | rd <- rs << c4u                         | `shl  r0, r1, 1`[^1]  |
+| 10 | 11 | 0 | rd   | rs1       | rs2       | SHR  | rd <- rs1 >> rs2                        | `shr  r0, r1, r2`[^1] |
+| 10 | 11 | 1 | rd   | rs        | c4u       | SHR  | rd <- rs >> c4u                         | `shr  r0, r1, 1`[^1]  |
+| 11 | 00 | 0 | rd   | rs1       | rs2       | AND  | rd <- rs1 & rs2                         | `and  r0, r1, r2`     |
+| 11 | 00 | 1 | rd   | rs        | c4u       | AND  | rd <- rs & (1<<c4u)                     | `and  r0, r1, 4`      |
+| 11 | 01 | 0 | rd   | rs1       | rs2       | ORR  | rd <- rs1 \| rs2                        | `orr  r0, r1, r2`     |
+| 11 | 01 | 1 | rd   | rs        | c4u       | ORR  | rd <- rs \| (1<<c4u)                    | `orr  r0, r1, 4`      |
+| 11 | 10 | 0 | rd   | rs1       | rs2       | EOR  | rd <- rs1 ^ rs2                         | `eor  r0, r1, r2`     |
+| 11 | 10 | 1 | rd   | rs        | c4u       | EOR  | rd <- rs ^ (1<<c4u)                     | `eor  r0, r1, 4`      |
 
 [^1]: May be implemented as a constant shift of 1.
 
@@ -68,14 +68,14 @@ All ALU instructions and MOV set flags.
 
 | Pseudo-instruction | Actual instruction |
 |---|---|
-| beq | bz |
-| bne | bnz |
-| bhs | bcs |
-| blo | bcc |
-| mov r0, r1 | add r0, r1, 0 |
-| ret | pop pc |
+| `beq` | `bz` |
+| `bne` | `bnz` |
+| `bhs` | `bcs` |
+| `blo` | `bcc` |
+| `mov r0, r1` | `add r0, r1, 0` |
+| `ret` | `pop pc` |
 
-For an indirect branch, use mov pc, r0.
+For an indirect branch, use `mov pc, r0`.
 
 ## Condition codes
 
@@ -86,6 +86,62 @@ For an indirect branch, use mov pc, r0.
 | 0010 | Zero flag not set |
 | 0011 | Carry flag set |
 | 0100 | Carry flag not set |
+
+# Assembly language
+
+Assembly statements generally follow the following structure
+```asm
+[LABEL:] MNEMONIC [OPERAND[, OPERAND]...]
+```
+The available `MNEMONIC`s can be found in the table above. `OPERAND`s can be registers, constants, or labels. Labels used as operands must be prefixed with `@`:
+```asm
+loop: jmp @loop
+```
+When the operand is used as the contents of a memory address, it must be enclosed in square brackets:
+```asm
+ldr r0, [@inp]
+.section data
+inp: .db 0
+```
+Apart from these statements, the assembler recognizes the following directives:
+
+- ```asm
+  .include "FILE"
+  ```
+
+  Includes a given `FILE`. The path is relative to the file being processed.
+
+- ```asm
+  .section SECTION
+  ```
+
+  Define into which memory `SECTION` the subsequent code is assembled. Options are `code` and `data`. The default is `code`.
+
+- ```asm
+  .org ADDRESS
+  ```
+
+  Sets memory `ADDRESS` at which the subsequent code will be assembled.
+
+- ```asm
+  .equ LABEL VALUE
+  ```
+
+  Creates a `LABEL` for a specific constant `VALUE`. Values may be character constants, e.g. `"c"`
+
+- ```asm
+  .db VALUE
+  ```
+
+  Inserts a `VALUE` into the instruction stream. The value may be a string constant, e.g. `"Hello, world"`
+
+- ```asm
+  .macro NAME
+  ; code
+  .endmacro
+  ```
+
+  Defines a macro. The code inside the macro can use arguments of the form `$0`, `$1`, etc., which are replaced by the actual arguments when the macro is called using `NAME arg0, arg1`. Labels inside the macro that start with an underscore are localized such that the same macro can be called multiple times.
 
 # Installation
 
