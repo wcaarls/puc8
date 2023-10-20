@@ -1,6 +1,6 @@
 ; Unit tests for ENG1448 processor
 ; When successful, halts at instruction 254, showing 0b01010101
-; When unsuccessful, halts at instruction 255, showing test number (1-36)
+; When unsuccessful, halts at instruction 255, showing test number (1-37)
 
        .macro setled
        mov  r12, $0
@@ -287,6 +287,11 @@ bcc2:  setled 36
        bcc  @err
        sub  r11, r10, r5
        bcc  @err
+
+; Unconditional branch to indirect address with offset
+br1:   setled 37
+       b    pc, 1
+       b    @err
 
        b    @succ
 

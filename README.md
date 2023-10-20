@@ -39,9 +39,10 @@ All ALU instructions and MOV set flags.
 |---|---|---|---|---|---|---|---|---|
 | 00 | 00 | 0 | rd   | rs        | c4i       | LDR  | rd <- [rs + c4i]                        | `ldr  r0, [r1, 4]`    |
 | 00 | 00 | 1 | rd   | c8u(7..4) | c8u(3..0) | LDR  | rd <- [c8u]                             | `ldr  r0, [254]`      |
-| 00 | 01 | 0 | rs   | rd        | c4i       | STR  | [rd + c4i] <- rs                        | `str  r0, [r1, 4]`    |
+| 00 | 01 | 0 | rs1  | rs2       | c4i       | STR  | [rs2 + c4i] <- rs1                      | `str  r0, [r1, 4]`    |
 | 00 | 01 | 1 | rs   | c8u(7..4) | c8u(3..0) | STR  | [c8u] <- rs                             | `str  r0, [254]`      |
 | 00 | 10 | 1 | rd   | c8u(7..4) | c8u(3..0) | MOV  | rd <- c8u                               | `mov  r0, 254`        |
+| 00 | 11 | 0 | cond | rs        | c4i       | B    | if cond then pc <- rs + c4i             | `b    pc, -4`         |
 | 00 | 11 | 1 | cond | c8u(7..4) | c8u(3..0) | B    | if cond then pc <- c8u                  | `b    254`            |
 | 01 | 00 | 0 | rs   | 0000      | 0000      | PUSH | [sp] <- rs, sp <- sp - 1                | `push r0`             |
 | 01 | 01 | 0 | rs   | 0000      | 0000      | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- rs  | `call r0`             |
@@ -64,6 +65,9 @@ All ALU instructions and MOV set flags.
 
 [^1]: May be implemented as a constant shift of 1.
 
+`c4i` can be omitted from the assembly instruction, in which case it is set
+to 0.
+
 ## Pseudo-instructions
 
 | Pseudo-instruction | Actual instruction |
@@ -74,8 +78,6 @@ All ALU instructions and MOV set flags.
 | `blo` | `bcc` |
 | `mov r0, r1` | `add r0, r1, 0` |
 | `ret` | `pop pc` |
-
-For an indirect branch, use `mov pc, r0`.
 
 ## Condition codes
 

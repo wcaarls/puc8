@@ -77,12 +77,15 @@ class Simulator:
                 next.mem[c8] = state.regs[r1]
         elif m == 'mov' and opcode == '00101':
             next.regs[r1] = c8
-        elif opcode == '00111':
+        elif opcode[:4] == '0011':
             # Direct jumps
             if ( m == 'b' or
                 (m == 'bz' and state.zero) or (m == 'bnz' and not state.zero) or
                 (m == 'bcs' and state.carry) or (m == 'bcc' and not state.carry)):
-                next.regs[15] = c8
+                if opcode[-1] == '0':
+                    next.regs[15] = (next.regs[r2] + c4i)&255
+                else:
+                    next.regs[15] = c8
         elif m == 'push':
             if state.regs[14] == -1:
                 raise RuntimeError('Stack overflow')
