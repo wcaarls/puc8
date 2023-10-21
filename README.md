@@ -41,11 +41,12 @@ All ALU instructions and MOV set flags.
 | 00 | 00 | 1 | rd   | c8u(7..4) | c8u(3..0) | LDR  | rd <- [c8u]                             | `ldr  r0, [254]`      |
 | 00 | 01 | 0 | rs1  | rs2       | c4i       | STR  | [rs2 + c4i] <- rs1                      | `str  r0, [r1, 4]`    |
 | 00 | 01 | 1 | rs   | c8u(7..4) | c8u(3..0) | STR  | [c8u] <- rs                             | `str  r0, [254]`      |
+| 00 | 10 | 0 | rd   | rs        | 0000      | MOV  | rd <- rs                                | `mov  r0, r1`         |
 | 00 | 10 | 1 | rd   | c8u(7..4) | c8u(3..0) | MOV  | rd <- c8u                               | `mov  r0, 254`        |
 | 00 | 11 | 0 | cond | rs        | c4i       | B    | if cond then pc <- rs + c4i             | `b    pc, -4`         |
 | 00 | 11 | 1 | cond | c8u(7..4) | c8u(3..0) | B    | if cond then pc <- c8u                  | `b    254`            |
 | 01 | 00 | 0 | rs   | 0000      | 0000      | PUSH | [sp] <- rs, sp <- sp - 1                | `push r0`             |
-| 01 | 01 | 0 | rs   | 0000      | 0000      | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- rs  | `call r0`             |
+| 01 | 01 | 0 | 0000 | rs        | 0000      | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- rs  | `call r0`             |
 | 01 | 01 | 1 | 0000 | c8u(7..4) | c8u(3..0) | CALL | [sp] <- pc + 1, sp <- sp - 1, pc <- c8u | `call 254`            |
 | 01 | 10 | 0 | rd   | 0000      | 0000      | POP  | rd <- [sp + 1], sp <- sp + 1            | `pop  r0`             |
 | 10 | 00 | 0 | rd   | rs1       | rs2       | ADD  | rd <- rs1 + rs2                         | `add  r0, r1, r2`     |
@@ -76,7 +77,6 @@ to 0.
 | `bne` | `bnz` |
 | `bhs` | `bcs` |
 | `blo` | `bcc` |
-| `mov r0, r1` | `add r0, r1, 0` |
 | `ret` | `pop pc` |
 
 ## Condition codes

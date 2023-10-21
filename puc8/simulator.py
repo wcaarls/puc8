@@ -75,8 +75,11 @@ class Simulator:
                 next.mem[(state.regs[r2]+c4i)&255] = state.regs[r1]
             elif opcode == '00011':
                 next.mem[c8] = state.regs[r1]
-        elif m == 'mov' and opcode == '00101':
-            next.regs[r1] = c8
+        elif m == 'mov':
+            if opcode == '00100':
+                next.regs[r1] = state.regs[r2]
+            elif opcode == '00101':
+                next.regs[r1] = c8
         elif opcode[:4] == '0011':
             # Direct jumps
             if ( m == 'b' or
@@ -104,7 +107,7 @@ class Simulator:
             next.regs[14] -= 1
         else:
             # ALU instructions (modify flags)
-            if m == 'add' or m == 'mov':
+            if m == 'add':
                 res = state.regs[r2] + (c4 if imm else state.regs[r3])
             elif m == 'sub':
                 res = state.regs[r2] + (256-(c4 if imm else state.regs[r3]))
