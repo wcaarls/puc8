@@ -75,6 +75,30 @@ def make_rrc(mnemonic, opcode, immediate, addr=False, write=True):
     }
     return type(mnemonic.title(), (PUC8Instruction,), members)
 
+def make_rr(mnemonic, opcode, immediate, minor4=0, addr=False, write=True):
+    r1 = Operand("r1", PUC8Register, read = not write, write=write)
+    r2 = Operand("r2", PUC8Register, read=True)
+    if addr:
+        syntax = Syntax([mnemonic, " ", r1, ",", " ", "[", r2, "]"])
+    else:
+        syntax = Syntax([mnemonic, " ", r1, ",", " ", r2])
+
+    patterns = {
+        "opcode": opcode,
+        "immediate": immediate,
+        "r1": r1,
+        "r2": r2,
+        "c4": minor4,
+    }
+    members = {
+        "tokens": [PUC8Token],
+        "r1": r1,
+        "r2": r2,
+        "syntax": syntax,
+        "patterns": patterns,
+    }
+    return type(mnemonic.title(), (PUC8Instruction,), members)
+
 def make_r(mnemonic, opcode, immediate, minor8=0, write=True):
     if write:
         r1 = Operand("r1", PUC8Register, write=True)
@@ -195,6 +219,7 @@ LdrL  = make_rc ("ldr",   0, 1, addr=True, label=True)
 Str   = make_rrc("str",   1, 0, write=False, addr=True)
 StrC  = make_rc ("str",   1, 1, write=False, addr=True)
 StrL  = make_rc ("str",   1, 1, write=False, addr=True, label=True)
+MovR  = make_rr ("mov",   2, 0)
 Mov   = make_rc ("mov",   2, 1)
 MovL  = make_rc ("mov",   2, 1, label=True)
 B     = make_c  ("b",     3, 1, 0)
@@ -446,7 +471,7 @@ def pattern_mov(context, tree):
 @isa.pattern("stm", "MOVU8(reg)")
 def pattern_movr(context, tree, c0):
     d = tree.value
-    context.emit(AddC(d, c0, 0, ismove=True))
+    context.emit(MovR(d, c0, ismove=True))
 
 @isa.pattern("reg", "REGI8", size=0, cycles=0, energy=0)
 @isa.pattern("reg", "REGU8", size=0, cycles=0, energy=0)
@@ -518,7 +543,7 @@ def pattern_cjmp0(context, tree, c0):
     }
     Bop = opnames[op]
     d = context.new_reg(PUC8Register)
-    context.emit(AddC(c0, c0, 0));
+    context.emit(MovR(c0, c0));
     jmp_ins = B(no_label.name, jumps=[no_label])
     context.emit(Bop(yes_label.name, jumps=[yes_label, jmp_ins]))
     context.emit(jmp_ins)

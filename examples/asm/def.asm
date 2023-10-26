@@ -1,7 +1,7 @@
 ; Standard definitions for ENG1448 processor
 
 ; Memory-mapped I/O
-      .equ inp, 0x00 ; Input register
+      .equ btn, 0x00 ; Input register
       .equ enc, 0x01 ; Encoder counter register
       .equ kdr, 0x02 ; Keyboard data register
       .equ udr, 0x03 ; UART data register

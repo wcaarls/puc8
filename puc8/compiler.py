@@ -49,7 +49,7 @@ ssd: .byte 0
 global ldr
 ldr: .byte 0
 global lcr
-lsr: .byte 0"""), 'io')
+lcr: .byte 0"""), 'io')
     obj = cc(src, 'puc8', opt_level=opt_level)
 
 #    ir = c_to_ir(src, 'puc8')

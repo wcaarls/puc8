@@ -156,4 +156,4 @@ class PUC8Arch(Architecture):
         yield RegisterUseDef(uses=live_out)
 
     def move(self, dst, src):
-        return instructions.AddC(dst, src, 0, ismove=True)
+        return instructions.MovR(dst, src, ismove=True)

@@ -6,7 +6,7 @@ main:    mov  r0, 0
          str  r0, [@ssd] ; Initialize display counter
 
 loop:    mov  r0, r1     ; Save prevous input register status into r0
-         ldr  r1, [@inp] ; Read current input register status into r1
+         ldr  r1, [@btn] ; Read current input register status into r1
 
          eor  r0, r0, r2 ; Invert r0
          and  r0, r0, r1 ; Detect positive edge (r1 & ~r0)
