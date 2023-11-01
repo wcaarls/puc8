@@ -228,6 +228,8 @@ BZ    = make_c  ("bz",    3, 1, 1)
 BNZ   = make_c  ("bnz",   3, 1, 2)
 BCS   = make_c  ("bcs",   3, 1, 3)
 BCC   = make_c  ("bcc",   3, 1, 4)
+BLT   = make_c  ("blt",   3, 1, 5)
+BGE   = make_c  ("bge",   3, 1, 6)
 
 # Stack instructions
 Push  = make_r  ("push",  4, 0, write=False)
@@ -301,6 +303,7 @@ def pattern_subc(context, tree, c0):
     context.emit(SubC(d, c0, tree[0].value))
     return d
 
+@isa.pattern("reg", "NEGU8(reg, reg)", size=2, cycles=2, energy=2)
 @isa.pattern("reg", "NEGI8(reg, reg)", size=2, cycles=2, energy=2)
 def pattern_neg(context, tree, c0):
     d = context.new_reg(PUC8Register)
@@ -495,16 +498,23 @@ def pattern_jmp(context, tree):
     tgt = tree.value
     context.emit(B(tgt.name, jumps=[tgt]))
 
-@isa.pattern("stm", "CJMPI8(reg, reg)", size=3, cycles=2, energy=2, condition=lambda t: t.value[0] == "==" or t.value[0] == "!=")
+@isa.pattern("stm", "CJMPI8(reg, reg)", size=3, cycles=2, energy=2)
 def pattern_cjmpi(context, tree, c0, c1):
     op, yes_label, no_label = tree.value
     opnames = {
-        "==": BZ,
-        "!=": BNZ,
+        "==": (BZ, False),
+        "!=": (BNZ, False),
+        "<": (BLT, False),
+        ">": (BLT, True),
+        "<=": (BGE, True),
+        ">=": (BGE, False),
     }
-    Bop = opnames[op]
+    Bop, swap = opnames[op]
     d = context.new_reg(PUC8Register)
-    context.emit(Sub(d, c0, c1));
+    if swap:
+        context.emit(Sub(d, c1, c0));
+    else:
+        context.emit(Sub(d, c0, c1));
     jmp_ins = B(no_label.name, jumps=[no_label])
     context.emit(Bop(yes_label.name, jumps=[yes_label, jmp_ins]))
     context.emit(jmp_ins)
@@ -542,7 +552,6 @@ def pattern_cjmp0(context, tree, c0):
         "!=": BNZ,
     }
     Bop = opnames[op]
-    d = context.new_reg(PUC8Register)
     context.emit(MovR(c0, c0));
     jmp_ins = B(no_label.name, jumps=[no_label])
     context.emit(Bop(yes_label.name, jumps=[yes_label, jmp_ins]))
