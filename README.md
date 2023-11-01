@@ -88,6 +88,8 @@ to 0.
 | 0010 | Zero flag not set |
 | 0011 | Carry flag set |
 | 0100 | Carry flag not set |
+| 0101 | Signed less than |
+| 0110 | Signed greater than or equal |
 
 # Assembly language
 

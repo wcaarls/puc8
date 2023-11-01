@@ -13,6 +13,8 @@ class State:
         self.regs[14] = 255
         self.zero = False
         self.carry = False
+        self.negative = False
+        self.overflow = False
 
     def diff(self, state):
         """Calculates difference between this state and another."""
@@ -30,6 +32,10 @@ class State:
             d += f', zf <- {state.zero}'
         if self.carry != state.carry:
             d += f', cf <- {state.carry}'
+        if self.negative != state.negative:
+            d += f', nf <- {state.negative}'
+        if self.overflow != state.overflow:
+            d += f', vf <- {state.overflow}'
 
         if d != '':
             d = d[2:]
@@ -39,7 +45,7 @@ class State:
         s = ''
         for i in range(14):
             s += f'r{i} = {self.regs[i]}, '
-        s += f'pc = {self.regs[15]}, sp = {self.regs[14]}, zf = {self.zero}, cf = {self.carry}'
+        s += f'pc = {self.regs[15]}, sp = {self.regs[14]}, zf = {self.zero}, cf = {self.carry}, nf = {self.negative}, vf = {self.overflow}'
 
         return s
 
@@ -64,28 +70,51 @@ class Simulator:
         next = copy.deepcopy(state)
         next.regs[15] += 1
 
+        if imm:
+            addr = c8
+            if opcode[1] == '0':
+                val = c4
+            else:
+                val = (1<<c4)
+        else:
+            addr = (state.regs[r2] + c4i)&255
+            val = state.regs[r3]
+
         # Simulate instructions
         if m == 'ldr':
-            if opcode == '00000':
-                next.regs[r1] = state.mem[(state.regs[r2] + c4i)&255]
-            elif opcode == '00001':
-                next.regs[r1] = state.mem[c8]
+            if addr == 2:
+                inp = input('Enter keyboard character: ')
+                if len(inp) > 0:
+                    next.regs[r1] = ord(inp[0])
+                else:
+                    next.regs[r1] = 0
+            else:
+                next.regs[r1] = state.mem[addr]
         elif m == 'str':
-            if opcode == '00010':
-                next.mem[(state.regs[r2]+c4i)&255] = state.regs[r1]
-            elif opcode == '00011':
-                next.mem[c8] = state.regs[r1]
+            if addr == 7:
+                print(chr(state.regs[r1]), end='')
+            elif addr == 8 and state.regs[r1] == 1:
+                print()
+            else:
+                next.mem[addr] = state.regs[r1]
         elif m == 'mov':
             if opcode == '00100':
                 next.regs[r1] = state.regs[r2]
             elif opcode == '00101':
                 next.regs[r1] = c8
+            next.zero = (next.regs[r1] == 0)
+            next.carry = False
+            next.negative = bool(next.regs[r1] & 128)
+            next.overflow = False
         elif opcode[:4] == '0011':
             # Direct jumps
             if ( m == 'b' or
                 (m == 'bz' and state.zero) or (m == 'bnz' and not state.zero) or
-                (m == 'bcs' and state.carry) or (m == 'bcc' and not state.carry)):
+                (m == 'bcs' and state.carry) or (m == 'bcc' and not state.carry) or
+                (m == 'blt' and (state.overflow != state.negative)) or
+                (m == 'bge' and (state.overflow == state.negative))):
                 if opcode[-1] == '0':
+                    # Uses incremented PC
                     next.regs[15] = (next.regs[r2] + c4i)&255
                 else:
                     next.regs[15] = c8
@@ -107,27 +136,29 @@ class Simulator:
             next.regs[14] -= 1
         else:
             # ALU instructions (modify flags)
+            next.overflow = 0
             if m == 'add':
-                res = state.regs[r2] + (c4 if imm else state.regs[r3])
+                res = state.regs[r2] + val
+                next.overflow = bool((~(state.regs[r2] ^ val) & (state.regs[r2] ^ res)) & 128)
             elif m == 'sub':
-                res = state.regs[r2] + (256-(c4 if imm else state.regs[r3]))
+                res = state.regs[r2] + (256-val)
+                next.overflow = bool(( (state.regs[r2] ^ val) & (state.regs[r2] ^ res)) & 128)
             elif m == 'shl':
-                val = c4 if imm else state.regs[r3]
-                res = state.regs[r2] << (val > 0)
+                res = state.regs[r2] << 1
             elif m == 'shr':
-                val = c4 if imm else state.regs[r3]
-                res = state.regs[r2] >> (val > 0)
+                res = state.regs[r2] >> 1
             elif m == 'and':
-                res = state.regs[r2] & ((1<<c4) if imm else state.regs[r3])
+                res = state.regs[r2] & val
             elif m == 'orr':
-                res = state.regs[r2] | ((1<<c4) if imm else state.regs[r3])
+                res = state.regs[r2] | val
             elif m == 'eor':
-                res = state.regs[r2] ^ ((1<<c4) if imm else state.regs[r3])
+                res = state.regs[r2] ^ val
             else:
                 raise ValueError(f'Unknown opcode {opcode}')
 
             next.zero = ((res&255) == 0)
             next.carry = bool(res & 256)
+            next.negative = bool(res & 128)
             next.regs[r1] = res&255
 
         return next
@@ -136,6 +167,7 @@ class Simulator:
         print("""Available commands:
    h       This help.
    n       Advance to next instruction.
+   c       Execute continuously until halted.
    p       Print current state.
    q       Exit simulator.
    rx      Print contents of register x.
@@ -150,9 +182,19 @@ class Simulator:
         for i, c in enumerate(mem['data']):
             state.mem[i] = int(c[0], 2)
 
+        quiet = False
+
         while True:
             # Print current instruction
             bin = mem['code'][state.regs[15]][0]
+
+            if quiet:
+                next = copy.deepcopy(self.execute(bin, state))
+                if next.regs[15] == state.regs[15]:
+                    quiet = False
+                state = next
+                continue
+
             _, dis = self.disassembler.process(bin)
             print(f'{state.regs[15]:3}: {bin[0:4]} {bin[4]} {bin[5:9]} {bin[9:13]} {bin[13:17]} ({dis})')
 
@@ -163,6 +205,9 @@ class Simulator:
             if cmd == '' or cmd == 'n':
                 # Advance to next instruction
                 next = self.execute(bin, state)
+            elif cmd == 'c':
+                # Execute continuously
+                quiet = True
             elif cmd == 'p':
                 # Print current state
                 print(state)
