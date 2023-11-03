@@ -309,6 +309,15 @@ def pattern_neg(context, tree, c0):
     context.emit(Sub(d, zero, c0))
     return d
 
+@isa.pattern("reg", "INVU8(reg, reg)", size=2, cycles=2, energy=2)
+@isa.pattern("reg", "INVI8(reg, reg)", size=2, cycles=2, energy=2)
+def pattern_inv(context, tree, c0):
+    d = context.new_reg(PUC8Register)
+    ff = context.new_reg(PUC8Register)
+    context.emit(Mov(ff, 255))
+    context.emit(EOr(d, c0, ff))
+    return d
+
 @isa.pattern("reg", "ANDI8(reg, reg)")
 @isa.pattern("reg", "ANDU8(reg, reg)")
 def pattern_and(context, tree, c0, c1):
