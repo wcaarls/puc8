@@ -167,6 +167,7 @@ class Simulator:
         print("""Available commands:
    h       This help.
    n       Advance to next instruction.
+   b a     Set or clear breakpoint at address a.
    c       Execute continuously until halted.
    p       Print current state.
    q       Exit simulator.
@@ -182,6 +183,7 @@ class Simulator:
         for i, c in enumerate(mem['data']):
             state.mem[i] = int(c[0], 2)
 
+        breakpoints = []
         quiet = False
 
         while True:
@@ -190,7 +192,7 @@ class Simulator:
 
             if quiet:
                 next = copy.deepcopy(self.execute(bin, state))
-                if next.regs[15] == state.regs[15]:
+                if next.regs[15] == state.regs[15] or next.regs[15] in breakpoints:
                     quiet = False
                 state = next
                 continue
@@ -208,6 +210,17 @@ class Simulator:
             elif cmd == 'c':
                 # Execute continuously
                 quiet = True
+            elif cmd[0] == 'b':
+                # Set (or clear) breakpoint
+                try:
+                    line = int(cmd[2:], 0)
+                    if line in breakpoints:
+                        breakpoints.remove(line)
+                    else:
+                        breakpoints.append(line)
+                    print('breakpoints: ', breakpoints)
+                except Exception as e:
+                    print(e)
             elif cmd == 'p':
                 # Print current state
                 print(state)
