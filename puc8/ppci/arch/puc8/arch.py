@@ -43,7 +43,7 @@ class PUC8Arch(Architecture):
 
     def determine_arg_locations(self, arg_types):
         arg_locs = []
-        int_regs = [registers.r12, registers.r11, registers.r10, registers.r9]
+        int_regs = [registers.r11, registers.r10, registers.r9]
         for arg_type in arg_types:
             # Determine register:
             if arg_type in [

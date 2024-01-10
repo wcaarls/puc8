@@ -51,8 +51,8 @@ class State:
 
 class Simulator:
     """Simulates machine code."""
-    def __init__(self):
-        self.disassembler = Disassembler()
+    def __init__(self, map = None):
+        self.disassembler = Disassembler(map)
 
     def execute(self, bin, state):
         """Returns machine state after executing instruction."""

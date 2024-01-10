@@ -144,13 +144,16 @@ def make_rc(mnemonic, opcode, immediate, write=True, addr=False, label=False):
 
     if label:
         c8 = Operand("c8", str)
+        if addr:
+            syntax = Syntax([mnemonic, " ", r1, ",", " ", "[", "@", c8, "]"])
+        else:
+            syntax = Syntax([mnemonic, " ", r1, ",", " ", "@", c8])
     else:
         c8 = Operand("c8", int)
-
-    if addr:
-        syntax = Syntax([mnemonic, " ", r1, ",", "[", c8, "]"])
-    else:
-        syntax = Syntax([mnemonic, " ", r1, ",", " ", c8])
+        if addr:
+            syntax = Syntax([mnemonic, " ", r1, ",", " ", "[", c8, "]"])
+        else:
+            syntax = Syntax([mnemonic, " ", r1, ",", " ", c8])
 
     patterns = {
         "opcode": opcode,
@@ -190,10 +193,10 @@ def branch_relocations(self):
 def make_c(mnemonic, opcode, immediate, minor4, label=True):
     if label:
         c8 = Operand("c8", str)
+        syntax = Syntax([mnemonic, " ", "@", c8])
     else:
         c8 = Operand("c8", int)
-
-    syntax = Syntax([mnemonic, " ", c8])
+        syntax = Syntax([mnemonic, " ", c8])
 
     patterns = {
         "opcode": opcode,

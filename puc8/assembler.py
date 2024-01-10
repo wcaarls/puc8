@@ -67,102 +67,110 @@ class Preprocessor:
         macros = macros.copy()
         macro = ''
         nonce = 0
-        dir = os.path.dirname(file)
 
-        with open(file, 'r') as f:
-            for idx, line in enumerate(f.readlines()):
-                idx = idx + 1
+        if isinstance(file, str):
+            dir = os.path.dirname(file)
+            f = open(file, 'r')
+        else:
+            dir = '.'
+            f = file
+            file = '<stdin>'
 
-                if macro == '':
-                    # Emit into main instruction stream
-                    code = asm
-                else:
-                    # Currently processing a macro; emit into that.
-                    code = macros[macro]
+        for idx, line in enumerate(f.readlines()):
+            idx = idx + 1
 
-                (label, inst) = self._splitlabel(self._normalize(line))
+            if macro == '':
+                # Emit into main instruction stream
+                code = asm
+            else:
+                # Currently processing a macro; emit into that.
+                code = macros[macro]
 
-                if inst != '':
-                    mnemonic, operands = split(inst)
-                    if len(operands) > 0:
-                        o = operands[0]
+            (label, inst) = self._splitlabel(self._normalize(line))
 
-                    if mnemonic == '.include':
-                        # Include other assembly file.
-                        if len(operands) != 1:
-                            raise SyntaxError(f'{file}:{idx:3}: Expected string constant')
-                        if len(o) < 3 or (o[0] != '"' and o[0] != '\'') or (o[-1] != '"' and o[-1] != '\''):
-                            raise SyntaxError(f'{file}:{idx:3}: Malformed string constant {o}')
-                        if label != '':
-                            code.append((file, idx, label, ''))
-                        asm2, macros2 = self._preprocess(os.path.join(dir, o[1:-1]))
-                        for line2 in asm2:
-                            code.append(line2)
-                        macros.update(macros2)
-                    elif mnemonic == '.db':
-                        # Split .db into single-byte constants
-                        tmp = label
-                        for o in operands:
-                            if o[0] == r'"':
-                                if len(o) < 3 or o[-1] != r'"':
-                                    raise SyntaxError(f'{file}:{idx:3}: Malformed string constant')
-                                for c in o[1:-1]:
-                                    code.append((file, idx, tmp, r'.db "' + c + r'"'))
-                                    tmp = ''
-                            else:
-                                code.append((file, idx, tmp, '.db ' + o))
+            if inst != '':
+                mnemonic, operands = split(inst)
+                if len(operands) > 0:
+                    o = operands[0]
+
+                if mnemonic == '.include':
+                    # Include other assembly file.
+                    if len(operands) != 1:
+                        raise SyntaxError(f'{file}:{idx:3}: Expected string constant')
+                    if len(o) < 3 or (o[0] != '"' and o[0] != '\'') or (o[-1] != '"' and o[-1] != '\''):
+                        raise SyntaxError(f'{file}:{idx:3}: Malformed string constant {o}')
+                    if label != '':
+                        code.append((file, idx, label, ''))
+                    asm2, macros2 = self._preprocess(os.path.join(dir, o[1:-1]))
+                    for line2 in asm2:
+                        code.append(line2)
+                    macros.update(macros2)
+                elif mnemonic == '.db':
+                    # Split .db into single-byte constants
+                    tmp = label
+                    for o in operands:
+                        if o[0] == r'"':
+                            if len(o) < 3 or o[-1] != r'"':
+                                raise SyntaxError(f'{file}:{idx:3}: Malformed string constant')
+                            for c in o[1:-1]:
+                                code.append((file, idx, tmp, r'.db "' + c + r'"'))
                                 tmp = ''
-                    elif mnemonic == '.macro':
-                        # Create a new macro.
-                        if len(operands) != 1:
-                            raise SyntaxError(f'{file}:{idx:3}: Missing macro name')
-                        elif macro != '':
-                            raise SyntaxError(f'{file}:{idx:3}: Cannot nest macro definitions')
-                        elif o in defs:
-                            raise SyntaxError(f'{file}:{idx:3}: Macro definition {o} shadows mnemonic')
-                        elif o in macros:
-                            raise SyntaxError(f'{file}:{idx:3}: Redefinition of macro {o}')
-                        macro = o
-                        macros[macro] = []
-                    elif mnemonic == '.endmacro':
-                        # Macro finished.
-                        macro = ''
-                    elif mnemonic in macros:
-                        # Macro call. Emit macro contents into main instruction stream.
-                        if label != '':
-                            code.append((file, idx, label, ''))
+                        else:
+                            code.append((file, idx, tmp, '.db ' + o))
+                            tmp = ''
+                elif mnemonic == '.macro':
+                    # Create a new macro.
+                    if len(operands) != 1:
+                        raise SyntaxError(f'{file}:{idx:3}: Missing macro name')
+                    elif macro != '':
+                        raise SyntaxError(f'{file}:{idx:3}: Cannot nest macro definitions')
+                    elif o in defs:
+                        raise SyntaxError(f'{file}:{idx:3}: Macro definition {o} shadows mnemonic')
+                    elif o in macros:
+                        raise SyntaxError(f'{file}:{idx:3}: Redefinition of macro {o}')
+                    macro = o
+                    macros[macro] = []
+                elif mnemonic == '.endmacro':
+                    # Macro finished.
+                    macro = ''
+                elif mnemonic in macros:
+                    # Macro call. Emit macro contents into main instruction stream.
+                    if label != '':
+                        code.append((file, idx, label, ''))
 
-                        for (file2, idx2, label2, inst2) in macros[mnemonic]:
-                            newinst = ''
-                            ii = 0
-                            if label2 != '' and label2[0] == '_':
-                                # Make label definition local
-                                label2 = label2 + str(nonce) + '_'
-                            while ii < len(inst2):
-                                if inst2[ii] == '$' and ii < len(inst2)-1:
-                                    # Resolve macro argument
-                                    arg = ord(inst2[ii+1])-ord('0');
-                                    if arg >= 0 and arg < len(operands):
-                                        newinst = newinst + operands[arg]
-                                        ii += 2
-                                    else:
-                                        raise SyntaxError(f'Invalid argument ${arg} in call to macro {mnemonic}')
-                                elif inst2[ii] == '@' and ii < len(inst2)-1 and inst2[ii+1] == '_':
-                                    # Make label use local
-                                    while ii < len(inst2) and not inst2[ii].isspace() and inst2[ii] != ']':
-                                        newinst = newinst + inst2[ii]
-                                        ii += 1
-                                    newinst = newinst + str(nonce) + '_'
+                    for (file2, idx2, label2, inst2) in macros[mnemonic]:
+                        newinst = ''
+                        ii = 0
+                        if label2 != '' and label2[0] == '_':
+                            # Make label definition local
+                            label2 = label2 + str(nonce) + '_'
+                        while ii < len(inst2):
+                            if inst2[ii] == '$' and ii < len(inst2)-1:
+                                # Resolve macro argument
+                                arg = ord(inst2[ii+1])-ord('0');
+                                if arg >= 0 and arg < len(operands):
+                                    newinst = newinst + operands[arg]
+                                    ii += 2
                                 else:
+                                    raise SyntaxError(f'Invalid argument ${arg} in call to macro {mnemonic}')
+                            elif inst2[ii] == '@' and ii < len(inst2)-1 and inst2[ii+1] == '_':
+                                # Make label use local
+                                while ii < len(inst2) and not inst2[ii].isspace() and inst2[ii] != ']':
                                     newinst = newinst + inst2[ii]
                                     ii += 1
+                                newinst = newinst + str(nonce) + '_'
+                            else:
+                                newinst = newinst + inst2[ii]
+                                ii += 1
 
-                            code.append((file2, idx2, label2, newinst))
-                        nonce += 1
-                    else:
-                        code.append((file, idx, label, inst))
-                elif label != '':
+                        code.append((file2, idx2, label2, newinst))
+                    nonce += 1
+                else:
                     code.append((file, idx, label, inst))
+            elif label != '':
+                code.append((file, idx, label, inst))
+
+        f.close()
 
         return asm, macros
 

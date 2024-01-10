@@ -4,9 +4,10 @@
    (c) 2020-2023 Wouter Caarls, PUC-Rio
 """
 
-import sys, argparse
+import sys, io, argparse
 
-from .compiler import compile, disasm
+from .compiler import compile
+from .assembler import Preprocessor, Assembler
 from .simulator import Simulator
 from .emitter import emitasm, emitvhdl
 
@@ -28,9 +29,14 @@ def main():
     args = parser.parse_args()
 
     with open(args.file, 'r') as f:
-        obj = compile(f, args.O)
+        asm = io.StringIO(compile(f, args.O))
 
-    mem = disasm(obj)
+    pp  = Preprocessor()
+    asm = pp.process(asm)
+
+    ass = Assembler()
+    mem = ass.process(asm)
+
     if args.simulate or args.test:
         sim = Simulator()
         if args.simulate:
@@ -46,7 +52,9 @@ def main():
             f = sys.stdout
 
         if args.S:
-            emitasm(mem, f)
+            # Don't emit machine code, just compiled assembly.
+            for (idx, label, inst) in asm:
+                print((label + ': ' if label != '' else '') + inst, file=f)
         else:
             emitvhdl(mem, f)
 
